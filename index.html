@@ -9,6 +9,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+let PEOPLE = [...SEED_PEOPLE];  // Ensure full array loads
+init();  // Calls renderGrid, buildSelect, etc.
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Montserrat',sans-serif;background:#1a1a2e;min-height:100vh;color:#e0e0e0;display:flex;flex-direction:column}
