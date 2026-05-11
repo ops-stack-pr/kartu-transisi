@@ -408,32 +408,6 @@ function handleManualGenerate() {
   s.style.display='block';
 }
 
-function hideMsg() { document.getElementById('manual-error').style.display='none'; document.getElementById('manual-success').style.display='none'; }
-function showErr(msg) { const e=document.getElementById('manual-error'); e.textContent=msg; e.style.display='block'; document.getElementById('manual-success').style.display='none'; }
-function updateFilterCounts() { const t=PEOPLE.length, i=PEOPLE.filter(p=>p.type==='Tim Internal').length, x=PEOPLE.filter(p=>p.type==='Tim Eksternal').length; document.querySelectorAll('.filter-btn').forEach(b=>{ if(b.dataset.filter==='all') b.textContent='Semua ('+t+')'; if(b.dataset.filter==='Tim Internal') b.textContent='Tim Internal ('+i+')'; if(b.dataset.filter==='Tim Eksternal') b.textContent='Tim Eksternal ('+x+')'; }); }
-function getFiltered() { return currentFilterType==='all'?PEOPLE:PEOPLE.filter(p=>p.type===currentFilterType); }
-function renderGrid(reset) { const grid=document.getElementById('people-grid'); const filtered=getFiltered(); const total=filtered.length; if(reset){grid.innerHTML='';displayedCount=0;} const toShow=filtered.slice(displayedCount,displayedCount+PAGE_SIZE); toShow.forEach(p=>{ const idx=PEOPLE.indexOf(p); const c=document.createElement('div'); c.className='person-card'; c.dataset.idx=idx; c.style.borderLeft='3px solid '+p.bg; if(currentPerson&&PEOPLE.indexOf(currentPerson)===idx) c.classList.add('selected'); if(p.isManual) c.style.borderTop='2px solid #7c3aed'; c.innerHTML='<div class="person-num">'+p.numberCode+(p.isManual?' <span style="color:#7c3aed;font-size:8px">MANUAL</span>':'')+'</div><div class="person-name">'+p.name+'</div><div class="person-type">'+p.type+'</div>'; c.addEventListener('click',()=>selectPerson(idx)); grid.appendChild(c); }); displayedCount+=toShow.length; document.getElementById('showing-count').textContent=displayedCount; document.getElementById('total-count').textContent=total; document.getElementById('btn-loadmore').style.display=displayedCount<total?'block':'none'; }
-function loadMore() { renderGrid(false); }
-function selectPerson(idx) { if(idx===undefined||idx===null) return; idx=parseInt(idx); currentPerson=PEOPLE[idx]; applyCard(currentPerson); const key=currentPerson.numberCode; if(photoDB[key]) setPhoto(photoDB[key]); else clearPhoto(); if(qrDB[key]) setQR(qrDB[key]); else clearQR(); document.getElementById('person-select').value=idx; document.querySelectorAll('.person-card').forEach(c=>c.classList.remove('selected')); const gc=document.querySelector('.person-card[data-idx="'+idx+'"]'); if(gc){gc.classList.add('selected');gc.scrollIntoView({behavior:'smooth',block:'nearest'});} }
-function applyCard(p) { document.getElementById('id-card').style.background=p.bg; setCardName(p.name.toUpperCase()); document.getElementById('class-label').textContent=p.classLabel; document.getElementById('class-number').textContent=p.numberCode; document.getElementById('class-number').style.color=NUM_COLOR[p.classified]||'#333'; document.querySelectorAll('.card-tab').forEach(t=>t.classList.remove('active')); const at=document.getElementById('tab-'+p.classCode.toLowerCase()); if(at) at.classList.add('active'); const isMedia=p.classified==='media'; ['card-title','card-name'].forEach(id=>{ const el=document.getElementById(id); el.style.color=isMedia?'#1a1a00':'#fff'; el.style.textShadow=isMedia?'none':(id==='card-title'?'0 2px 8px rgba(0,0,0,.3)':'0 2px 6px rgba(0,0,0,.3)'); }); }
-
-function setCardName(text) {
-  const el=document.getElementById('card-name');
-  el.textContent=text;
-  el.style.whiteSpace='nowrap';
-  el.style.overflow='hidden';
-  const containerW=314;
-  const canvas=document.createElement('canvas');
-  const ctx=canvas.getContext('2d');
-  let chosen=20;
-  for(let s=20;s>=9;s--) {
-    ctx.font='800 '+s+'px Montserrat, sans-serif';
-    if(ctx.measureText(text).width<=containerW){ chosen=s; break; }
-    chosen=s;
-  }
-  el.style.fontSize=chosen+'px';
-}
-
 <script>
 function handlePhotoUpload(evt) {
   const f = evt.target.files[0];
