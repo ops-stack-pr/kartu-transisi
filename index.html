@@ -70,9 +70,10 @@ body{font-family:'Montserrat',sans-serif;background:#1a1a2e;min-height:100vh;col
 .logo-kemensetneg{height:36px;width:auto;object-fit:contain}
 .card-title{text-align:center;font-weight:800;text-transform:uppercase;color:#fff;font-size:23px;line-height:1.1;letter-spacing:.5px;margin-bottom:6px;width:100%;text-shadow:0 2px 8px rgba(0,0,0,.3);flex-shrink:0}
 /* PHOTO BOX — background-image approach for reliable center-crop in html2canvas */
-.card-photo-box{
-  width:128px;height:178px;
-  background-color:#FFFFFF;
+.card-photo-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;   
   border-radius:6px;
   display:flex;align-items:center;justify-content:center;
   overflow:hidden;margin-bottom:6px;flex-shrink:0;
