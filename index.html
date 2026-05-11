@@ -71,8 +71,21 @@ body{font-family:'Montserrat',sans-serif;background:#1a1a2e;min-height:100vh;col
 .logo-gbk{height:36px;width:auto;object-fit:contain}
 .logo-kemensetneg{height:36px;width:auto;object-fit:contain}
 .card-title{text-align:center;font-weight:800;text-transform:uppercase;color:#fff;font-size:23px;line-height:1.1;letter-spacing:.5px;margin-bottom:6px;width:100%;text-shadow:0 2px 8px rgba(0,0,0,.3);flex-shrink:0}
-.card-photo-box{width:128px;height:178px;background:#FFFFFF;border-radius:6px;display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:6px;flex-shrink:0;box-shadow:0 4px 16px rgba(0,0,0,.3)}
-.card-photo-box img{width:100%;height:100%;object-fit:cover}
+.card-photo-box img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  image-rendering:-webkit-optimize-contrast;
+  image-rendering:crisp-edges;
+}
+
+.card-qr img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  image-rendering:-webkit-optimize-contrast;
+  image-rendering:crisp-edges;
+}
 .photo-ph{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:#aaa;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px}
 .photo-ph svg{opacity:.4}
 .card-name-wrap{width:100%;margin-bottom:6px;flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;height:28px}
@@ -421,24 +434,181 @@ function setCardName(text) {
   el.style.fontSize=chosen+'px';
 }
 
-function handlePhotoUpload(evt) { const f=evt.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=e=>{ setPhoto(e.target.result); if(currentPerson) photoDB[currentPerson.numberCode]=e.target.result; const pv=document.getElementById('photo-preview'); pv.src=e.target.result; pv.style.display='block'; updateCounts(); }; r.readAsDataURL(f); }
-function handleQRUpload(evt) { const f=evt.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=e=>{ setQR(e.target.result); if(currentPerson) qrDB[currentPerson.numberCode]=e.target.result; const qv=document.getElementById('qr-preview'); qv.src=e.target.result; qv.style.display='block'; updateCounts(); }; r.readAsDataURL(f); }
-function setPhoto(d) { document.getElementById('photo-ph').style.display='none'; const i=document.getElementById('card-photo-img'); i.src=d; i.style.display='block'; }
-function clearPhoto() { document.getElementById('photo-ph').style.display='flex'; const i=document.getElementById('card-photo-img'); i.src=''; i.style.display='none'; document.getElementById('photo-preview').style.display='none'; }
-function setQR(d) { document.getElementById('qr-ph').style.display='none'; const i=document.getElementById('card-qr-img'); i.src=d; i.style.display='block'; }
-function clearQR() { document.getElementById('qr-ph').style.display='flex'; const i=document.getElementById('card-qr-img'); i.src=''; i.style.display='none'; document.getElementById('qr-preview').style.display='none'; }
-function updateCounts() { document.getElementById('photo-count').textContent=Object.keys(photoDB).length; document.getElementById('qr-count').textContent=Object.keys(qrDB).length; }
+<script>
+function handlePhotoUpload(evt) {
+  const f = evt.target.files[0];
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = e => {
+    setPhoto(e.target.result);
+    if (currentPerson) photoDB[currentPerson.numberCode] = e.target.result;
+    const pv = document.getElementById('photo-preview');
+    pv.src = e.target.result;
+    pv.style.display = 'block';
+    updateCounts();
+  };
+  r.readAsDataURL(f);
+}
 
-const EXPORT_SCALE=1063/340;
-async function renderCanvas() { return await html2canvas(document.getElementById('id-card'),{ scale:EXPORT_SCALE, useCORS:true, allowTaint:true, backgroundColor:null, width:340, height:491, logging:false, imageTimeout:15000 }); }
-function personLabel(p) { return p.numberCode.replace(' ','')+'_'+p.name.replace(/[^a-zA-Z0-9]/g,'_'); }
-function dl(url,name) { const a=document.createElement('a'); a.download=name; a.href=url; a.click(); }
-async function exportCard(fmt) { if(!currentPerson){ toast('Pilih anggota terlebih dahulu.'); return; } toast('Sedang memproses...',true); const canvas=await renderCanvas(); const lbl=personLabel(currentPerson); if(fmt==='png') dl(canvas.toDataURL('image/png'),'IDCard_'+lbl+'.png'); else if(fmt==='jpg') dl(canvas.toDataURL('image/jpeg',0.98),'IDCard_'+lbl+'.jpg'); else if(fmt==='pdf'){ const {jsPDF}=window.jspdf; const pdf=new jsPDF({orientation:'portrait',unit:'cm',format:[9,13]}); pdf.addImage(canvas.toDataURL('image/jpeg',0.98),'JPEG',0,0,9,13); pdf.save('IDCard_'+lbl+'.pdf'); } toast('✓ '+currentPerson.numberCode+' berhasil di-download!'); }
-function openBatchModal() { document.getElementById('batch-modal').classList.add('open'); }
-function closeBatchModal() { document.getElementById('batch-modal').classList.remove('open'); }
-async function batchExport(fmt) { closeBatchModal(); toast('Batch export dimulai...',true); const {jsPDF}=window.jspdf; let pdf; if(fmt==='pdf') pdf=new jsPDF({orientation:'portrait',unit:'cm',format:[9,13]}); for(let i=0;i<PEOPLE.length;i++){ selectPerson(i); await new Promise(r=>setTimeout(r,100)); const canvas=await renderCanvas(); if(fmt==='png'){ dl(canvas.toDataURL('image/png'),'IDCard_'+personLabel(PEOPLE[i])+'.png'); await new Promise(r=>setTimeout(r,80)); } else if(fmt==='pdf'){ if(i>0) pdf.addPage([9,13],'portrait'); pdf.addImage(canvas.toDataURL('image/jpeg',0.94),'JPEG',0,0,9,13); } } if(fmt==='pdf') pdf.save('IDCards_PPKGBK_Semua.pdf'); toast('✓ Batch export selesai! '+PEOPLE.length+' kartu.'); }
-let _tt; function toast(msg,processing=false) { const el=document.getElementById('toast'); el.textContent=msg; el.className='show'+(processing?' processing':''); clearTimeout(_tt); if(!processing) _tt=setTimeout(()=>el.classList.remove('show'),4000); }
+function handleQRUpload(evt) {
+  const f = evt.target.files[0];
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = e => {
+    setQR(e.target.result);
+    if (currentPerson) qrDB[currentPerson.numberCode] = e.target.result;
+    const qv = document.getElementById('qr-preview');
+    qv.src = e.target.result;
+    qv.style.display = 'block';
+    updateCounts();
+  };
+  r.readAsDataURL(f);
+}
+
+function setPhoto(d) {
+  document.getElementById('photo-ph').style.display = 'none';
+  const i = document.getElementById('card-photo-img');
+  i.src = d;
+  i.style.display = 'block';
+}
+
+function clearPhoto() {
+  document.getElementById('photo-ph').style.display = 'flex';
+  const i = document.getElementById('card-photo-img');
+  i.src = '';
+  i.style.display = 'none';
+  document.getElementById('photo-preview').style.display = 'none';
+}
+
+function setQR(d) {
+  document.getElementById('qr-ph').style.display = 'none';
+  const i = document.getElementById('card-qr-img');
+  i.src = d;
+  i.style.display = 'block';
+}
+
+function clearQR() {
+  document.getElementById('qr-ph').style.display = 'flex';
+  const i = document.getElementById('card-qr-img');
+  i.src = '';
+  i.style.display = 'none';
+  document.getElementById('qr-preview').style.display = 'none';
+}
+
+function updateCounts() {
+  document.getElementById('photo-count').textContent = Object.keys(photoDB).length;
+  document.getElementById('qr-count').textContent = Object.keys(qrDB).length;
+}
+
+const EXPORT_SCALE = 3;
+
+async function renderCanvas() {
+  return await html2canvas(document.getElementById('id-card'), {
+    scale: EXPORT_SCALE,
+    useCORS: true,
+    allowTaint: true,
+    backgroundColor: null,
+    width: 340,
+    height: 491,
+    logging: false,
+    imageTimeout: 15000,
+    letterRendering: true,
+    foreignObjectRendering: false
+  });
+}
+
+function personLabel(p) {
+  return p.numberCode.replace(' ', '') + '_' + p.name.replace(/[^a-zA-Z0-9]/g, '_');
+}
+
+function dl(url, name) {
+  const a = document.createElement('a');
+  a.download = name;
+  a.href = url;
+  a.click();
+}
+
+async function exportCard(fmt) {
+  if (!currentPerson) {
+    toast('Pilih anggota terlebih dahulu.');
+    return;
+  }
+
+  toast('Sedang memproses...', true);
+  const canvas = await renderCanvas();
+  const lbl = personLabel(currentPerson);
+
+  if (fmt === 'png') {
+    dl(canvas.toDataURL('image/png'), 'IDCard_' + lbl + '.png');
+  } else if (fmt === 'jpg') {
+    dl(canvas.toDataURL('image/jpeg', 1.0), 'IDCard_' + lbl + '.jpg');
+  } else if (fmt === 'pdf') {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'cm',
+      format: [9, 13]
+    });
+    pdf.addImage(canvas.toDataURL('image/jpeg', 1.0), 'JPEG', 0, 0, 9, 13);
+    pdf.save('IDCard_' + lbl + '.pdf');
+  }
+
+  toast('✓ ' + currentPerson.numberCode + ' berhasil di-download!');
+}
+
+function openBatchModal() {
+  document.getElementById('batch-modal').classList.add('open');
+}
+
+function closeBatchModal() {
+  document.getElementById('batch-modal').classList.remove('open');
+}
+
+async function batchExport(fmt) {
+  closeBatchModal();
+  toast('Batch export dimulai...', true);
+
+  const { jsPDF } = window.jspdf;
+  let pdf;
+
+  if (fmt === 'pdf') {
+    pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'cm',
+      format: [9, 13]
+    });
+  }
+
+  for (let i = 0; i < PEOPLE.length; i++) {
+    selectPerson(i);
+    await new Promise(r => setTimeout(r, 100));
+
+    const canvas = await renderCanvas();
+
+    if (fmt === 'png') {
+      dl(canvas.toDataURL('image/png'), 'IDCard_' + personLabel(PEOPLE[i]) + '.png');
+      await new Promise(r => setTimeout(r, 80));
+    } else if (fmt === 'pdf') {
+      if (i > 0) pdf.addPage([9, 13], 'portrait');
+      pdf.addImage(canvas.toDataURL('image/jpeg', 1.0), 'JPEG', 0, 0, 9, 13);
+    }
+  }
+
+  if (fmt === 'pdf') {
+    pdf.save('IDCards_PPKGBK_Semua.pdf');
+  }
+
+  toast('✓ Batch export selesai! ' + PEOPLE.length + ' kartu.');
+}
+
+let _tt;
+function toast(msg, processing = false) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show' + (processing ? ' processing' : '');
+  clearTimeout(_tt);
+  if (!processing) _tt = setTimeout(() => el.classList.remove('show'), 4000);
+}
+
 init();
 </script>
-</body>
-</html>
