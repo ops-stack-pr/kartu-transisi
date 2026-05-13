@@ -625,32 +625,42 @@ ctx.fillStyle = '#fff';
 rrctx(ctx, tbX, tbY, tbW, tbH, 30);
 ctx.fill();
 
-// LOGO RENDERING (SAFE VERSION)
-if (gbkLogoImg && gbkLogoImg.complete && kemensetnegLogoImg && kemensetnegLogoImg.complete) {
+// SINGLE SOURCE OF TRUTH: Draw logos side-by-side
+if (gbkLogoImg && gbkLogoImg.complete && gbkLogoImg.width > 0 && 
+    kemensetnegLogoImg && kemensetnegLogoImg.complete && kemensetnegLogoImg.width > 0) {
+    
     const gap = 20;
-    const maxLogoHeight = tbH - 60; // Padding
-    const maxTotalWidth = tbW - 60; 
+    const maxBarH = tbH - 40; // 20px padding top/bottom
+    const maxBarW = tbW - 60; // 30px padding left/right
     
-    const gRatio = gbkLogoImg.width / gbkLogoImg.height;
-    const kRatio = kemensetnegLogoImg.width / kemensetnegLogoImg.height;
+    // Scale logic
+    let scale = 1;
+    const totalW = gbkLogoImg.width + gap + kemensetnegLogoImg.width;
+    const maxH = Math.max(gbkLogoImg.height, kemensetnegLogoImg.height);
     
-    let drawH = maxLogoHeight;
-    let gW = drawH * gRatio;
-    let kW = drawH * kRatio;
+    // Calculate scale to fit width OR height
+    const scaleW = maxBarW / totalW;
+    const scaleH = maxBarH / maxH;
+    scale = Math.min(scaleW, scaleH, 1); // Never scale up larger than original
     
-    if (gW + kW + gap > maxTotalWidth) {
-        const scale = maxTotalWidth / (gW + kW + gap);
-        drawH *= scale;
-        gW *= scale;
-        kW *= scale;
-    }
+    const drawGW = gbkLogoImg.width * scale;
+    const drawGH = gbkLogoImg.height * scale;
+    const drawKW = kemensetnegLogoImg.width * scale;
+    const drawKH = kemensetnegLogoImg.height * scale;
     
-    const startX = tbX + (tbW / 2) - ((gW + kW + gap) / 2);
-    const startY = tbY + (tbH / 2) - (drawH / 2);
+    const startX = tbX + (tbW / 2) - ((drawGW + drawKW + gap) / 2);
+    const startY = tbY + (tbH / 2) - (Math.max(drawGH, drawKH) / 2);
     
-    ctx.drawImage(gbkLogoImg, startX, startY, gW, drawH);
-    ctx.drawImage(kemensetnegLogoImg, startX + gW + gap, startY, kW, drawH);
+    ctx.drawImage(gbkLogoImg, startX, startY, drawGW, drawGH);
+    ctx.drawImage(kemensetnegLogoImg, startX + drawGW + gap, startY, drawKW, drawKH);
 } else {
+    // Fallback if images aren't ready
+    ctx.fillStyle = "#3a5d9e";
+    ctx.textAlign = "center";
+    ctx.font = "bold 30px Arial";
+    ctx.fillText("LOADING LOGOS...", tbX + tbW/2, tbY + tbH/2 + 10);
+}
+ 
     // Fallback: draw text if images aren't ready yet
     ctx.fillStyle = "#3a5d9e";
     ctx.textAlign = "center";
