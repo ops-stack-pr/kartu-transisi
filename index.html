@@ -654,7 +654,12 @@ if (gbkLogoImg && gbkLogoImg.complete && gbkLogoImg.width > 0 &&
     ctx.drawImage(gbkLogoImg, startX, startY, drawGW, drawGH);
     ctx.drawImage(kemensetnegLogoImg, startX + drawGW + gap, startY, drawKW, drawKH);
 } else {
- 
+    // Fallback if images aren't ready
+    ctx.fillStyle = "#3a5d9e";
+    ctx.textAlign = "center";
+    ctx.font = "bold 30px Arial";
+    ctx.fillText("LOADING LOGOS...", tbX + tbW/2, tbY + tbH/2 + 10);
+}
     // Fallback if images aren't ready
     ctx.fillStyle = "#3a5d9e";
     ctx.textAlign = "center";
