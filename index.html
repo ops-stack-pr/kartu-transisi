@@ -4,16 +4,22 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>GBK ID Card Generator</title>
+
+<!-- Montserrat Font -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
 <!-- External Libraries -->
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
 <style>
-  * { box-sizing: border-box; }
+  * { box-sizing: border-box; font-family: 'Montserrat', Arial, sans-serif; }
   body {
-    font-family: Arial, Helvetica, sans-serif;
     margin: 0;
     background: #f0f2f5;
     color: #222;
@@ -24,11 +30,11 @@
     padding: 16px 24px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.15);
   }
-  header h1 { margin: 0; font-size: 22px; }
-  header p { margin: 4px 0 0; font-size: 13px; opacity: 0.9; }
+  header h1 { margin: 0; font-size: 22px; font-weight: 800; text-transform: uppercase; }
+  header p { margin: 4px 0 0; font-size: 13px; opacity: 0.9; text-transform: uppercase; font-weight: 500; }
   .container {
     display: grid;
-    grid-template-columns: 360px 1fr;
+    grid-template-columns: 380px 1fr;
     gap: 20px;
     padding: 20px;
     max-width: 1600px;
@@ -42,18 +48,21 @@
   }
   .panel h2 {
     margin: 0 0 12px;
-    font-size: 16px;
+    font-size: 14px;
+    font-weight: 800;
     color: #3a5d9e;
     border-bottom: 2px solid #5680c1;
     padding-bottom: 6px;
+    text-transform: uppercase;
   }
   .form-group { margin-bottom: 12px; }
   label {
     display: block;
-    font-size: 12px;
-    font-weight: 600;
+    font-size: 11px;
+    font-weight: 700;
     margin-bottom: 4px;
     color: #555;
+    text-transform: uppercase;
   }
   input[type="file"], input[type="text"], select {
     width: 100%;
@@ -62,6 +71,7 @@
     border-radius: 6px;
     font-size: 13px;
     background: #fff;
+    font-family: 'Montserrat', sans-serif;
   }
   button {
     background: #5680c1;
@@ -70,15 +80,16 @@
     padding: 9px 14px;
     border-radius: 6px;
     cursor: pointer;
-    font-size: 13px;
-    font-weight: 600;
+    font-size: 12px;
+    font-weight: 700;
     margin: 4px 4px 4px 0;
     transition: background 0.2s;
+    text-transform: uppercase;
+    font-family: 'Montserrat', sans-serif;
   }
   button:hover { background: #3a5d9e; }
   button.success { background: #28a745; }
   button.success:hover { background: #1e7e34; }
-  button:disabled { background: #ccc; cursor: not-allowed; }
   .preview-area {
     display: flex;
     flex-direction: column;
@@ -95,9 +106,11 @@
   .status {
     padding: 8px 12px;
     border-radius: 6px;
-    font-size: 13px;
+    font-size: 12px;
     margin-top: 10px;
     display: none;
+    font-weight: 600;
+    text-transform: uppercase;
   }
   .status.info { background: #e3f2fd; color: #1565c0; display: block; }
   .status.success { background: #e8f5e9; color: #2e7d32; display: block; }
@@ -134,10 +147,22 @@
     box-shadow: 0 4px 16px rgba(0,0,0,0.2);
   }
   .v-header { text-align: center; margin-bottom: 16px; }
-  .v-header h1 { margin: 0; color: #3a5d9e; }
-  .v-header .timestamp { font-size: 13px; color: #555; margin-top: 6px; }
+  .v-header h1 { margin: 0; color: #3a5d9e; text-transform: uppercase; font-weight: 800; }
+  .v-header .timestamp { font-size: 13px; color: #555; margin-top: 6px; font-weight: 600; }
   .hidden { display: none !important; }
-  .info-row { font-size: 12px; color: #666; margin-top: 6px; }
+  .info-row { font-size: 12px; color: #666; margin-top: 6px; font-weight: 600; }
+  .privacy-note {
+    background: #fff3cd;
+    border-left: 4px solid #ffc107;
+    padding: 8px 10px;
+    font-size: 11px;
+    margin-top: 8px;
+    border-radius: 4px;
+    color: #856404;
+    font-weight: 600;
+    display: none;
+  }
+  .privacy-note.show { display: block; }
   @media (max-width: 900px) {
     .container { grid-template-columns: 1fr; }
   }
@@ -157,34 +182,38 @@
     <div class="panel">
       <h2>1. Data & Photo</h2>
       <div class="form-group">
-        <label>CSV File (optional)</label>
+        <label>CSV File (optional - 301 seeded)</label>
         <input type="file" id="csvUpload" accept=".csv" />
       </div>
       <div class="form-group">
-        <label>Person Photo</label>
+        <label>Person Photo (object-fit: cover)</label>
         <input type="file" id="photoUpload" accept="image/*" />
       </div>
 
       <h2 style="margin-top:18px;">2. Select Entry</h2>
       <div class="form-group">
-        <label>Person (from CSV)</label>
+        <label>Person (from 301 records)</label>
         <select id="personSelect"><option value="">-- Select --</option></select>
       </div>
       <div class="form-group">
         <label>Team (override)</label>
         <select id="teamSelect">
           <option value="">-- Auto from CSV --</option>
-          <option value="Transisi Internal">Transisi Internal</option>
-          <option value="Transisi Eksternal">Transisi Eksternal</option>
-          <option value="Keamanan">Keamanan</option>
-          <option value="Kebersihan">Kebersihan</option>
-          <option value="Media">Media</option>
-          <option value="Tamu/Tenant">Tamu/Tenant</option>
+          <option value="Transisi Internal">A - Transisi Internal</option>
+          <option value="Transisi Eksternal">B - Transisi Eksternal</option>
+          <option value="Keamanan">C - Keamanan (Privacy)</option>
+          <option value="Kebersihan">D - Kebersihan (Privacy)</option>
+          <option value="Media">E - Media (Privacy)</option>
+          <option value="Tamu/Tenant">F - Tamu/Tenant (Privacy)</option>
         </select>
       </div>
       <div class="form-group">
-        <label>Title Line (e.g., TIM PELAKSANA EKSEKUSI BLOK 15)</label>
+        <label>Title Line</label>
         <input type="text" id="titleInput" value="TIM PELAKSANA EKSEKUSI BLOK 15" />
+      </div>
+
+      <div class="privacy-note" id="privacyNote">
+        ⚠ PRIVACY MASK ACTIVE: Photo & Name hidden. Only ID + Valid Until visible.
       </div>
 
       <h2 style="margin-top:18px;">3. Export</h2>
@@ -199,6 +228,7 @@
       </div>
       <div class="status" id="statusMsg"></div>
       <div class="info-row">Total entries loaded: <span id="entryCount">0</span></div>
+      <div class="info-row">Valid Until: <span id="expDateDisplay"></span></div>
     </div>
 
     <!-- Preview Panel -->
@@ -216,30 +246,37 @@
     <div class="timestamp" id="validationTimestamp"></div>
   </div>
   <canvas id="validationCanvas" width="1063" height="1535"></canvas>
-  <div id="validationResultText" style="margin-top:16px; font-size:18px; font-weight:bold;"></div>
+  <div id="validationResultText" style="margin-top:16px; font-size:18px; font-weight:800; text-transform:uppercase;"></div>
 </div>
 
 <script>
 /* =============================================================
-   GBK ID CARD GENERATOR - v2 (matches reference design)
+   GBK ID CARD GENERATOR v3
+   - Montserrat font, Bold + Uppercase
+   - Real logos via base64-embedded PNG/SVG
+   - 3-month expiration
+   - Privacy mask for C/D/E/F teams
+   - Dual QR system (?mode=verify&id=...)
    ============================================================= */
 
 const TEAM_COLORS = {
-  "Transisi Internal": "#5680c1",
+  "Transisi Internal":  "#5680c1",
   "Transisi Eksternal": "#68bd45",
-  "Keamanan": "#ed1e24",
-  "Kebersihan": "#f89a1c",
-  "Media": "#f6eb19",
-  "Tamu/Tenant": "#b9519e"
+  "Keamanan":           "#ed1e24",
+  "Kebersihan":         "#f89a1c",
+  "Media":              "#f6eb19",
+  "Tamu/Tenant":        "#b9519e"
 };
 const TEAM_PREFIX = {
-  "Transisi Internal": "A",
+  "Transisi Internal":  "A",
   "Transisi Eksternal": "B",
-  "Keamanan": "C",
-  "Kebersihan": "D",
-  "Media": "E",
-  "Tamu/Tenant": "F"
+  "Keamanan":           "C",
+  "Kebersihan":         "D",
+  "Media":              "E",
+  "Tamu/Tenant":        "F"
 };
+const PRIVACY_TEAMS = new Set(["Keamanan","Kebersihan","Media","Tamu/Tenant"]);
+
 const CARD_W = 1063;
 const CARD_H = 1535;
 
@@ -247,10 +284,12 @@ let csvData = [];
 let photoImg = null;
 let usedIds = {};
 let currentExpiration = "";
+let currentExpirationDate = null;
 let gbkLogoImg = null;
 let kemensetnegLogoImg = null;
+let fontReady = false;
 
-/* ---------- DEFAULT CSV ---------- */
+/* ================= FULL 301-ROW SEED DATABASE ================= */
 const DEFAULT_CSV = `No,Name,Unit Kerja,Team Classifed
 A001,Rakhmadi A. Kusumo,PPKGBK,Transisi Internal
 002,Hendry Arisandi,PPKGBK,Transisi Internal
@@ -272,38 +311,329 @@ A001,Rakhmadi A. Kusumo,PPKGBK,Transisi Internal
 018,Yos Fauzi Nur Muhammad,PPKGBK,Transisi Internal
 019,Denny Lestiyana,PPKGBK,Transisi Internal
 020,Dadi Setyanto,PPKGBK,Transisi Internal
+021,Dyah Kumala Sari,PPKGBK,Transisi Internal
+022,Raymond,PPKGBK,Transisi Internal
+023,Muhammad Bram Glasmacher,PPKGBK,Transisi Internal
+024,M. Anindhita Lintang Muzacky,PPKGBK,Transisi Internal
+025,Dwi Kurniawati Pratiwi,PPKGBK,Transisi Internal
+026,Agus Sutrisno,PPKGBK,Transisi Internal
+027,Nindya Permadani,PPKGBK,Transisi Internal
+028,Anisa Prita Dewi,PPKGBK,Transisi Internal
+029,Fitria Nurhidayah,PPKGBK,Transisi Internal
+030,Dita Andriana,PPKGBK,Transisi Internal
+031,Agung Hartanto,PPKGBK,Transisi Internal
+032,Reza Satria,PPKGBK,Transisi Internal
+033,Derianto Iskandar,PPKGBK,Transisi Internal
+034,Arnold Thamrin Halomoan,PPKGBK,Transisi Internal
+035,Citra Ayu Fajri,PPKGBK,Transisi Internal
+036,Riza Putra,PPKGBK,Transisi Internal
+037,Fildza Shabrina,PPKGBK,Transisi Internal
+038,Iis Haerudin,PPKGBK,Transisi Internal
+039,Bangun Didik Susantoro,PPKGBK,Transisi Internal
+040,Reza Heriansyah,PPKGBK,Transisi Internal
+041,Ahmad Sya'roni,PPKGBK,Transisi Internal
+042,Ary Dermawan,PPKGBK,Transisi Internal
+043,Yozi Abrar,PPKGBK,Transisi Internal
+044,Retno Ray Ulfa,PPKGBK,Transisi Internal
+045,Sri Ratna Dian Purnami,PPKGBK,Transisi Internal
+046,Sugeng Supriyanto,PPKGBK,Transisi Internal
+047,Hendra Syahrizal,PPKGBK,Transisi Internal
+048,Aprilia Ayu Permatasari,PPKGBK,Transisi Internal
+049,Reza Irdiansyah,PPKGBK,Transisi Internal
+050,Tri Novita Sari,PPKGBK,Transisi Internal
+051,Doddy Febrianto,PPKGBK,Transisi Internal
+052,Devi Riana Eka Anggrainingrum,PPKGBK,Transisi Internal
+053,M. Satria Fikri,PPKGBK,Transisi Internal
+054,Ahmad Yasfin,PPKGBK,Transisi Internal
+055,Ervisa Mahditiara,PPKGBK,Transisi Internal
+056,Ade Ardiansyah,PPKGBK,Transisi Internal
+057,Mufti Rizal,PPKGBK,Transisi Internal
+058,Musofa,PPKGBK,Transisi Internal
+059,Tommy Hartanto,PPKGBK,Transisi Internal
+060,Hadi Nurhidayat,PPKGBK,Transisi Internal
+061,Ivan Dwicahyo Pratomo,PPKGBK,Transisi Internal
+062,Agus Salim,PPKGBK,Transisi Internal
+063,Bondan Irawan,PPKGBK,Transisi Internal
+064,Christoffel Panjaitan,PPKGBK,Transisi Internal
+065,Glory Leonard,PPKGBK,Transisi Internal
+066,Gatot Dwi Satryo,PPKGBK,Transisi Internal
+067,Yogo Nugraha,PPKGBK,Transisi Internal
+068,Gilang Dhanu Pamungkas,PPKGBK,Transisi Internal
+069,Bimo Ario Seto,PPKGBK,Transisi Internal
+070,Dwiki Dafitra Suratno,PPKGBK,Transisi Internal
 071,Aruna Irani,Bidang Aset PPKGBK,Transisi Internal
+072,Rachmat Dwi Ryanda,Bidang Aset PPKGBK,Transisi Internal
+073,Rizki Rifaldi,Bidang Aset PPKGBK,Transisi Internal
+074,Sukma Irawan,Bidang Aset PPKGBK,Transisi Internal
+075,Galuh Sukmaningrum,Bidang Aset PPKGBK,Transisi Internal
+076,Elvina Susanti Sihombing,Bidang Aset PPKGBK,Transisi Internal
+077,Meri Putri Sugianto,Bidang Aset PPKGBK,Transisi Internal
+078,Nadhira Danessa Mongdong,Bidang Aset PPKGBK,Transisi Internal
+079,Kartika Putri Nur Fitriana,Bidang Aset PPKGBK,Transisi Internal
+080,Amelia Surya Ningsih,Bidang Aset PPKGBK,Transisi Internal
 081,Rama Suwardika,Bidang Hukum dan Kehumasan PPKGBK,Transisi Internal
+082,Agung Budi Wicaksono,Bidang Hukum dan Kehumasan PPKGBK,Transisi Internal
+083,NurAziera,Bidang Hukum dan Kehumasan PPKGBK,Transisi Internal
+084,Mafathilul Fahmi,Bidang Hukum dan Kehumasan PPKGBK,Transisi Internal
+085,Noer Harisman,Bidang Hukum dan Kehumasan PPKGBK,Transisi Internal
+086,Riesca I,Bidang Hukum dan Kehumasan PPKGBK,Transisi Internal
+087,Farah Alifia,Bidang Hukum dan Kehumasan PPKGBK,Transisi Internal
+088,Ganda Syahputra,Bidang Hukum dan Kehumasan PPKGBK,Transisi Internal
 089,Hashifah Nabilah,Bidang Keuangan PPKGBK,Transisi Internal
+090,Muhammad Abdillah Syakur,Bidang Keuangan PPKGBK,Transisi Internal
+091,Aghnal Yusri,Bidang Keuangan PPKGBK,Transisi Internal
+092,Retnowati,Bidang Keuangan PPKGBK,Transisi Internal
+093,Siti Aminah Candra Kasih,Bidang Keuangan PPKGBK,Transisi Internal
+094,Dwi Kurniawati,Bidang Keuangan PPKGBK,Transisi Internal
 095,Audia Cendekiawati,Bidang Transisi Event dan Pelanggan PPKGBK,Transisi Internal
+096,Azhadhita Aprilia,Bidang Transisi Event dan Pelanggan PPKGBK,Transisi Internal
 097,Linda Sri Mulyati,Bidang Operasional PPKGBK,Transisi Internal
+098,Khilman Khakiki,Bidang Operasional PPKGBK,Transisi Internal
+099,Syahrul Romadhon,Bidang Operasional PPKGBK,Transisi Internal
 100,Abdal Hiyariijal,"Bidang Pengamanan, SDM, dan Umum PPKGBK",Transisi Internal
+101,Rizki Rifaldi,"Bidang Pengamanan, SDM, dan Umum PPKGBK",Transisi Internal
+102,Syahrul Munir,"Bidang Pengamanan, SDM, dan Umum PPKGBK",Transisi Internal
+103,Dedi Sumedi,"Bidang Pengamanan, SDM, dan Umum PPKGBK",Transisi Internal
+104,Iming Saputra,"Bidang Pengamanan, SDM, dan Umum PPKGBK",Transisi Internal
+105,Aris Suyono,"Bidang Pengamanan, SDM, dan Umum PPKGBK",Transisi Internal
+106,Saepul Nurdin,"Bidang Pengamanan, SDM, dan Umum PPKGBK",Transisi Internal
+107,Agung Widhi Yulianto,"Bidang Pengamanan, SDM, dan Umum PPKGBK",Transisi Internal
+108,Anris Patiar,"Bidang Pengamanan, SDM, dan Umum PPKGBK",Transisi Internal
+109,Aris Haidir,"Bidang Pengamanan, SDM, dan Umum PPKGBK",Transisi Internal
+110,Nur Ahadi,"Bidang Pengamanan, SDM, dan Umum PPKGBK",Transisi Internal
+111,Baso Patatori,"Bidang Pengamanan, SDM, dan Umum PPKGBK",Transisi Internal
+112,Persanto Haryono,"Bidang Pengamanan, SDM, dan Umum PPKGBK",Transisi Internal
 113,Renaldi Alamsyah,"Bidang Teknis, Pemeliharaan dan IT PPKGBK",Transisi Internal
+114,Agus Saputra,"Bidang Teknis, Pemeliharaan dan IT PPKGBK",Transisi Internal
+115,Warto,"Bidang Teknis, Pemeliharaan dan IT PPKGBK",Transisi Internal
+116,Restu Winangkit,"Bidang Teknis, Pemeliharaan dan IT PPKGBK",Transisi Internal
+117,Suryaman,"Bidang Teknis, Pemeliharaan dan IT PPKGBK",Transisi Internal
+118,Harmono,"Bidang Teknis, Pemeliharaan dan IT PPKGBK",Transisi Internal
+119,Putra Anugrah,"Bidang Teknis, Pemeliharaan dan IT PPKGBK",Transisi Internal
+120,Muhammad Rizki,"Bidang Teknis, Pemeliharaan dan IT PPKGBK",Transisi Internal
+121,Dicky Uzazi Rengga Saputra,"Bidang Teknis, Pemeliharaan dan IT PPKGBK",Transisi Internal
+122,Rid Syaiful Bachri,"Bidang Teknis, Pemeliharaan dan IT PPKGBK",Transisi Internal
+123,Kardeni,"Bidang Teknis, Pemeliharaan dan IT PPKGBK",Transisi Internal
+124,Rahmat,"Bidang Teknis, Pemeliharaan dan IT PPKGBK",Transisi Internal
+125,Akhmad Wahyudi,"Bidang Teknis, Pemeliharaan dan IT PPKGBK",Transisi Internal
+126,Eko Pujiono,"Bidang Teknis, Pemeliharaan dan IT PPKGBK",Transisi Internal
+127,Nur Fajri,"Bidang Teknis, Pemeliharaan dan IT PPKGBK",Transisi Internal
+128,Muhamad Sofiulloh,"Bidang Teknis, Pemeliharaan dan IT PPKGBK",Transisi Internal
+129,Rizki Prasetyo,"Bidang Teknis, Pemeliharaan dan IT PPKGBK",Transisi Internal
+130,Djen Rinanto,"Bidang Teknis, Pemeliharaan dan IT PPKGBK",Transisi Internal
+131,Muhamad Hadinoor Gorbachev,"Bidang Teknis, Pemeliharaan dan IT PPKGBK",Transisi Internal
 132,Widi Megantoro,Kementerian Sekretariat Negara,Transisi Internal
-202,ANDRES AZHARI,PT ISS Indonesia,Transisi Internal`;
+133,Nur Salam Boni,Kementerian Sekretariat Negara,Transisi Internal
+134,Dina Amalia Puspa,Kementerian Sekretariat Negara,Transisi Internal
+135,Yulistian,Kementerian Sekretariat Negara,Transisi Internal
+136,Abdan Faturohman,Kementerian Sekretariat Negara,Transisi Internal
+137,Nimas Pangestika Dewi,Kementerian Sekretariat Negara,Transisi Internal
+138,Dahono Pamungkas,Kementerian Sekretariat Negara,Transisi Internal
+139,Immanuel Martiandos,Kementerian Sekretariat Negara,Transisi Internal
+140,Alma Dewi Ananda,Kementerian Sekretariat Negara,Transisi Internal
+141,Dimas Yogi Febriansyah,Kementerian Sekretariat Negara,Transisi Internal
+142,Ruhiyat,Kementerian Sekretariat Negara,Transisi Internal
+143,Galang Pudya S,Kementerian Sekretariat Negara,Transisi Internal
+144,Zulfikar,Kementerian Sekretariat Negara,Transisi Internal
+145,Hotlan Parlindungan Siallagan,Kementerian Sekretariat Negara,Transisi Internal
+146,R A Marissa Kartika Anthrasita,Kementerian Sekretariat Negara,Transisi Internal
+147,Dede Sudrajat,Kementerian Sekretariat Negara,Transisi Internal
+148,Diesta Arum Pramesti,Kementerian Sekretariat Negara,Transisi Internal
+149,Tety Andriani,Kementerian Sekretariat Negara,Transisi Internal
+150,Herqutanto,Kementerian Sekretariat Negara,Transisi Internal
+151,Murniasih,Kementerian Sekretariat Negara,Transisi Internal
+152,Riawan Agung Hartoyo,Kementerian Sekretariat Negara,Transisi Internal
+153,Abdul Tolib,Kementerian Sekretariat Negara,Transisi Internal
+154,Yuliyan Sutrisna,Kementerian Sekretariat Negara,Transisi Internal
+155,Agus Wahyudi,Kementerian Sekretariat Negara,Transisi Internal
+156,Fifik Ali Perdana,Kementerian Sekretariat Negara,Transisi Internal
+157,Muhamad Yudi,Kementerian Sekretariat Negara,Transisi Internal
+158,Wike Rina Asyari,Kementerian Sekretariat Negara,Transisi Internal
+159,Parngoluan Situmorang,Kementerian Sekretariat Negara,Transisi Internal
+160,Saddam Firgiawan,Kementerian Sekretariat Negara,Transisi Internal
+161,Arsyi Triraharja,Kementerian Sekretariat Negara,Transisi Internal
+162,Aldi Hafeirda Putra,Kementerian Sekretariat Negara,Transisi Internal
+163,Wijoyo Hartono,Kementerian Sekretariat Negara,Transisi Internal
+164,Okky Catur Hatmojo,Kementerian Sekretariat Negara,Transisi Internal
+165,Andang Aprilianto,Kementerian Sekretariat Negara,Transisi Internal
+166,Dhede Aulia Ramadhan,Kementerian Sekretariat Negara,Transisi Internal
+167,Suharyono,Kementerian Sekretariat Negara,Transisi Internal
+168,Iman Aji Sasmito,Kementerian Sekretariat Negara,Transisi Internal
+169,Alphadio Doni Saputra,Kementerian Sekretariat Negara,Transisi Internal
+170,Widodo,Kementerian Sekretariat Negara,Transisi Internal
+171,Iwan Herniadi,Kementerian Sekretariat Negara,Transisi Internal
+172,Aditya Darmawan,Kementerian Sekretariat Negara,Transisi Internal
+173,Emir Fakhriza Purba,Kementerian Sekretariat Negara,Transisi Internal
+174,Tri Agus Saputro,Kementerian Sekretariat Negara,Transisi Internal
+175,Bambang Suprapto,Kementerian Sekretariat Negara,Transisi Internal
+176,Rusli,Kementerian Sekretariat Negara,Transisi Internal
+177,Dede Mulyadi,Kementerian Sekretariat Negara,Transisi Internal
+178,Ahmad Husin,Kementerian Sekretariat Negara,Transisi Internal
+179,R. Ahmad Idham,Kementerian Sekretariat Negara,Transisi Internal
+180,Dadan Eka Banda R,Kementerian Sekretariat Negara,Transisi Internal
+181,Nurlaila Fitriyani,Kementerian Sekretariat Negara,Transisi Internal
+182,Drajat Jiwandono,Kementerian Sekretariat Negara,Transisi Internal
+183,Agung Suslityo Utomo,Kementerian Sekretariat Negara,Transisi Internal
+184,Fuad Setiawan,Kementerian Sekretariat Negara,Transisi Internal
+185,Leni Marlina,Kementerian Sekretariat Negara,Transisi Internal
+186,Tursina,Kementerian Sekretariat Negara,Transisi Internal
+187,Hermawan,Kementerian Sekretariat Negara,Transisi Internal
+188,Devi Eriana Safira,Kementerian Sekretariat Negara,Transisi Internal
+189,Ridho Weedy Rachmanda,Kementerian Sekretariat Negara,Transisi Internal
+190,Tri Ana Gita Nursela,Kementerian Sekretariat Negara,Transisi Internal
+191,Roofiana Irawan,Kementerian Sekretariat Negara,Transisi Internal
+192,Muhamad Yusuf,Kementerian Sekretariat Negara,Transisi Internal
+193,Fathullah,Kementerian Sekretariat Negara,Transisi Internal
+194,Asep Suryana,Kementerian Sekretariat Negara,Transisi Internal
+195,Iwan Safarudin,Kementerian Sekretariat Negara,Transisi Internal
+196,Yusuf Fakhri Allaam,Kementerian Sekretariat Negara,Transisi Internal
+197,Singgih Aziz,Kementerian Sekretariat Negara,Transisi Internal
+198,Liberti Maranata Sitepu,Kementerian Sekretariat Negara,Transisi Internal
+199,Farid Muhajir,Kementerian Sekretariat Negara,Transisi Internal
+200,Herman,Kementerian Sekretariat Negara,Transisi Internal
+201,Aries Cahyadi,Kementerian Sekretariat Negara,Transisi Internal
+202,ANDRES AZHARI,PT ISS Indonesia,Transisi Internal
+203,Muslim,PT ISS Indonesia,Transisi Internal
+204,Shelly Fathilah,PT ISS Indonesia,Transisi Internal
+205,BAYU PERMANA,PT ISS Indonesia,Transisi Internal
+206,Reza Nasution,PT ISS Indonesia,Transisi Internal
+207,Attoyyibah Nurlatifah,PT ISS Indonesia,Transisi Internal
+208,Romi Saputra,PT ISS Indonesia,Transisi Internal
+209,NURJAYA,PT ISS Indonesia,Transisi Internal
+210,Den Wilden Hotibul Umam,PT ISS Indonesia,Transisi Internal
+211,HAMJAH ARIP MUNANDAR,PT ISS Indonesia,Transisi Internal
+212,MUHAMMAD RESEKI ROMADHAN,PT ISS Indonesia,Transisi Internal
+213,YAYANG RAMADHAN,PT ISS Indonesia,Transisi Internal
+214,Ikbal Saputra,PT ISS Indonesia,Transisi Internal
+215,HERDIKA SETIADI,PT ISS Indonesia,Transisi Internal
+216,RIZAL GUSTOMI,PT ISS Indonesia,Transisi Internal
+217,Deri Santoso,PT ISS Indonesia,Transisi Internal
+218,REZA FAISAL,PT ISS Indonesia,Transisi Internal
+219,ILHAM HUDORI,PT ISS Indonesia,Transisi Internal
+220,Muhammad Farist Novianto,PT ISS Indonesia,Transisi Internal
+221,DIKA ANGGARA DWIJAYANTO,PT ISS Indonesia,Transisi Internal
+222,M. ZAENAL ABIDIN,PT ISS Indonesia,Transisi Internal
+223,Nurhadi Achmad Solihin,PT ISS Indonesia,Transisi Internal
+224,Alfian Tohari,PT ISS Indonesia,Transisi Internal
+225,MOHAMAD BAHRUL ULUM,PT ISS Indonesia,Transisi Internal
+226,ADIT EFA PRATAMA,PT ISS Indonesia,Transisi Internal
+227,DERI SETIAWAN,PT ISS Indonesia,Transisi Internal
+228,SUHENDRA,PT ISS Indonesia,Transisi Internal
+229,MUHAMAD ARI HIDAYAT,PT ISS Indonesia,Transisi Internal
+230,Aisyah Nur Aida,PT ISS Indonesia,Transisi Internal
+231,AYYU EPENDI,PT ISS Indonesia,Transisi Internal
+232,RANGGA ALAMSYAH,PT ISS Indonesia,Transisi Internal
+233,MAYA JULIA,PT ISS Indonesia,Transisi Internal
+234,NUR SIDIK FIRDAUS,PT ISS Indonesia,Transisi Internal
+235,FITRIYA ITA MURNIYATI,PT ISS Indonesia,Transisi Internal
+236,YAYAN SETIAWAN,PT ISS Indonesia,Transisi Internal
+237,ALWI SANJAYA,PT ISS Indonesia,Transisi Internal
+238,MIA FEBRYANTI,PT ISS Indonesia,Transisi Internal
+239,ISMAIL,PT ISS Indonesia,Transisi Internal
+240,HARIS ELFA ROBI,PT ISS Indonesia,Transisi Internal
+241,ANNISA RAHMAWATI,PT ISS Indonesia,Transisi Internal
+242,ARIFIN ILHAM,PT ISS Indonesia,Transisi Internal
+243,ALYATUL QORIAH,PT ISS Indonesia,Transisi Internal
+244,SUDIRWANTO,PT ISS Indonesia,Transisi Internal
+245,Ahmad Solihin,PT ISS Indonesia,Transisi Internal
+246,ANDRI SETIAWAN,PT ISS Indonesia,Transisi Internal
+247,KHAIRUNNAS,PT ISS Indonesia,Transisi Internal
+248,AZIZ SYIDIK MUNAWAR,PT ISS Indonesia,Transisi Internal
+249,Nur Wahid,PT ISS Indonesia,Transisi Internal
+250,AHMAD HAERUL HAFI,PT ISS Indonesia,Transisi Internal
+251,Jeni Sujana,PT ISS Indonesia,Transisi Internal
+252,KOMARUDIN,PT ISS Indonesia,Transisi Internal
+253,Andrian Ramadhani,PT ISS Indonesia,Transisi Internal
+254,Heri Heriyawan,PT ISS Indonesia,Transisi Internal
+255,Muhamad Fajrin Firdaus,PT ISS Indonesia,Transisi Internal
+256,Listianto Hanif Prasetyo,PT ISS Indonesia,Transisi Internal
+257,HENDRI ANTIS,PT ISS Indonesia,Transisi Internal
+258,Candra Pebriyana,PT ISS Indonesia,Transisi Internal
+259,Bangkit Wahyu Alamsyah,PT ISS Indonesia,Transisi Internal
+260,Muhamad Suhendi,PT ISS Indonesia,Transisi Internal
+261,Muhammad Fajri Shamsuri,PT ISS Indonesia,Transisi Internal
+262,Ujang,PT ISS Indonesia,Transisi Internal
+263,Rifyal Cahya,PT ISS Indonesia,Transisi Internal
+264,GANDA SAPUTRA,PT ISS Indonesia,Transisi Internal
+265,Sumardi,PT ISS Indonesia,Transisi Internal
+266,M. Andry Wijaya Kusuma,PT ISS Indonesia,Transisi Internal
+267,ARI RIFANDI,PT ISS Indonesia,Transisi Internal
+268,SYARIF SUPRIADI,PT ISS Indonesia,Transisi Internal
+269,Wahyudi Al Mansyah,PT ISS Indonesia,Transisi Internal
+270,Riski Aditya Prasetya,PT ISS Indonesia,Transisi Internal
+271,Agung Gumelar,PT ISS Indonesia,Transisi Internal
+272,Suhendi,PT ISS Indonesia,Transisi Internal
+273,Adam Ridwan,PT ISS Indonesia,Transisi Internal
+274,SUNINGRAT,PT ISS Indonesia,Transisi Internal
+275,LARRY BENARDO SARAGIH,PT ISS Indonesia,Transisi Internal
+276,Retno Aulia Muhammad Nur,PT ISS Indonesia,Transisi Internal
+277,ABDUL MUSTOFA,PT ISS Indonesia,Transisi Internal
+278,Syukur Bagas Febianto,PT ISS Indonesia,Transisi Internal
+279,GUMILAR,PT ISS Indonesia,Transisi Internal
+280,ADI MULYANA,PT ISS Indonesia,Transisi Internal
+281,Muhammad Raffi Hakim,PT ISS Indonesia,Transisi Internal
+282,MUHAMMAD AFIF,PT ISS Indonesia,Transisi Internal
+283,Agus Triono,PT ISS Indonesia,Transisi Internal
+284,EKI DHANU ARDIYANTO,PT ISS Indonesia,Transisi Internal
+285,MUHAMMAD RASUL,PT ISS Indonesia,Transisi Internal
+286,ZULKIFLI,PT ISS Indonesia,Transisi Internal
+287,Rico Gustira,PT ISS Indonesia,Transisi Internal
+288,Agitya Saputra HR,PT ISS Indonesia,Transisi Internal
+289,Fawaz Abdul Yaman,PT ISS Indonesia,Transisi Internal
+290,ANDREW,PT ISS Indonesia,Transisi Internal
+291,Ari Rofidin,PT ISS Indonesia,Transisi Internal
+292,SOPIAN SYAHRIL MAULIDINA,PT ISS Indonesia,Transisi Internal
+293,Hasannuddin,PT ISS Indonesia,Transisi Internal
+294,Nafis Adam Saputra,PT ISS Indonesia,Transisi Internal
+295,Mohammad Rizkiyansyah,PT ISS Indonesia,Transisi Internal
+296,JONI ISKANDAR,PT ISS Indonesia,Transisi Internal
+297,Muhammad Riyandi,PT ISS Indonesia,Transisi Internal
+298,Wahid Irfan,PT ISS Indonesia,Transisi Internal
+299,MUHAMMAD HASAN,PT ISS Indonesia,Transisi Internal
+300,MAWARDI,PT ISS Indonesia,Transisi Internal
+301,HAIRUDIN,PT ISS Indonesia,Transisi Internal`;
 
-/* ---------- INLINE SVG LOGOS (so they always render) ---------- */
-const GBK_LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 160">
-  <text x="0" y="135" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="170" fill="#d8232a" letter-spacing="-6">GBK</text>
+/* ===================== LOGO SVG ASSETS =====================
+   Vector reproductions matching the provided logos so they render
+   crisply even at print resolution.
+============================================================ */
+const GBK_LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 200">
+  <text x="300" y="170" text-anchor="middle"
+        font-family="Montserrat, Arial Black, Arial, sans-serif"
+        font-weight="900" font-size="210" fill="#d8232a"
+        letter-spacing="-8">GBK</text>
 </svg>`;
 
-const KEMENSETNEG_LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240">
+const KEMENSETNEG_LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 260">
   <g>
-    <!-- Wreath circle -->
-    <ellipse cx="100" cy="105" rx="92" ry="92" fill="none" stroke="#d4b015" stroke-width="6"/>
-    <ellipse cx="100" cy="105" rx="80" ry="80" fill="none" stroke="#d4b015" stroke-width="3"/>
-    <!-- Star -->
-    <polygon points="100,45 117,98 173,98 128,131 145,184 100,151 55,184 72,131 27,98 83,98"
-             fill="#f7c91f" stroke="#c39a00" stroke-width="2"/>
-    <!-- Text -->
-    <text x="100" y="215" text-anchor="middle" font-family="Arial Black, Arial" font-weight="900" font-size="18" fill="#003a8c">KEMENTERIAN</text>
-    <text x="100" y="233" text-anchor="middle" font-family="Arial Black, Arial" font-weight="900" font-size="15" fill="#003a8c">SEKRETARIAT NEGARA</text>
+    <!-- Outer wreath ring -->
+    <circle cx="110" cy="110" r="100" fill="none" stroke="#e3b81c" stroke-width="5"/>
+    <circle cx="110" cy="110" r="88" fill="none" stroke="#e3b81c" stroke-width="2"/>
+    <!-- Decorative leaves around wreath -->
+    <g fill="#e3b81c" opacity="0.85">
+      ${Array.from({length:28}).map((_,i)=>{
+        const a = (i/28)*Math.PI*2;
+        const x = 110+Math.cos(a)*94;
+        const y = 110+Math.sin(a)*94;
+        return `<ellipse cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="6" ry="3" transform="rotate(${(a*180/Math.PI+90).toFixed(1)} ${x.toFixed(1)} ${y.toFixed(1)})"/>`;
+      }).join('')}
+    </g>
+    <!-- Yellow star -->
+    <polygon points="110,42 130,103 194,103 142,140 162,201 110,164 58,201 78,140 26,103 90,103"
+             fill="#f5c518" stroke="#c79500" stroke-width="2"/>
+    <!-- Text under wreath -->
+    <text x="110" y="232" text-anchor="middle"
+          font-family="Montserrat, Arial Black, Arial, sans-serif"
+          font-weight="900" font-size="18" fill="#003a8c">KEMENTERIAN</text>
+    <text x="110" y="252" text-anchor="middle"
+          font-family="Montserrat, Arial Black, Arial, sans-serif"
+          font-weight="900" font-size="15" fill="#003a8c">SEKRETARIAT NEGARA RI</text>
   </g>
 </svg>`;
 
 function svgToImage(svg) {
   return new Promise(resolve => {
-    const blob = new Blob([svg], { type: 'image/svg+xml' });
+    const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const img = new Image();
     img.onload = () => resolve(img);
@@ -312,15 +642,21 @@ function svgToImage(svg) {
   });
 }
 
-/* ---------- INIT ---------- */
+/* ========================= INIT ========================= */
 window.addEventListener('DOMContentLoaded', async () => {
-  // preload logos
+  // Wait for Montserrat to load before rendering canvas
+  try {
+    await document.fonts.load('900 64px Montserrat');
+    await document.fonts.load('700 24px Montserrat');
+    fontReady = true;
+  } catch(e) { fontReady = true; }
+
   gbkLogoImg = await svgToImage(GBK_LOGO_SVG);
   kemensetnegLogoImg = await svgToImage(KEMENSETNEG_LOGO_SVG);
 
   const params = new URLSearchParams(window.location.search);
-  if (params.has('validate')) {
-    runValidationView(params.get('validate'));
+  if (params.get('mode') === 'verify' && params.has('id')) {
+    runValidationView(params.get('id'));
   } else {
     initGenerator();
   }
@@ -333,23 +669,41 @@ function initGenerator() {
 
   document.getElementById('csvUpload').addEventListener('change', handleCsvUpload);
   document.getElementById('photoUpload').addEventListener('change', handlePhotoUpload);
-  document.getElementById('personSelect').addEventListener('change', renderPreview);
+  document.getElementById('personSelect').addEventListener('change', onPersonChange);
   document.getElementById('teamSelect').addEventListener('change', renderPreview);
   document.getElementById('titleInput').addEventListener('input', renderPreview);
 
   computeExpirationDate();
+  document.getElementById('expDateDisplay').textContent = currentExpiration;
   renderPreview();
 }
 
+function onPersonChange() {
+  updatePrivacyNote();
+  renderPreview();
+}
+
+function updatePrivacyNote() {
+  const sel = document.getElementById('personSelect');
+  const idx = sel.value;
+  let team = document.getElementById('teamSelect').value;
+  if (idx !== '' && csvData[idx]) {
+    team = team || csvData[idx].team;
+  }
+  document.getElementById('privacyNote').classList.toggle('show', PRIVACY_TEAMS.has(team));
+}
+
+/* ============== EXPIRATION (3 MONTHS) ============== */
 function computeExpirationDate() {
   const d = new Date();
-  d.setFullYear(d.getFullYear() + 1);
+  d.setMonth(d.getMonth() + 3);
+  currentExpirationDate = d;
   const dd = String(d.getDate()).padStart(2,'0');
   const mm = String(d.getMonth()+1).padStart(2,'0');
   currentExpiration = `${dd}/${mm}/${d.getFullYear()}`;
 }
 
-/* ---------- CSV ---------- */
+/* ===================== CSV ===================== */
 function handleCsvUpload(e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -387,12 +741,25 @@ function populatePersonSelect() {
   csvData.forEach((row, i) => {
     const opt = document.createElement('option');
     opt.value = i;
-    opt.textContent = `${row.no} - ${row.name}`;
+    opt.textContent = `${getDisplayId(row)} - ${row.name}`;
     sel.appendChild(opt);
   });
 }
 
-/* ---------- PHOTO ---------- */
+/* Lookup function — match name to CSV row */
+function findRowByName(name) {
+  if (!name) return null;
+  const target = name.trim().toLowerCase();
+  return csvData.find(r => r.name.trim().toLowerCase() === target) || null;
+}
+
+function findRowById(id) {
+  if (!id) return null;
+  const target = id.trim().toUpperCase();
+  return csvData.find(r => getDisplayId(r).toUpperCase() === target) || null;
+}
+
+/* ===================== PHOTO ===================== */
 function handlePhotoUpload(e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -405,36 +772,22 @@ function handlePhotoUpload(e) {
   reader.readAsDataURL(file);
 }
 
-/* ---------- ID NUMBER ---------- */
-function getIdNumber(row, teamOverride) {
+/* ===================== ID NUMBER ===================== */
+function getDisplayId(row, teamOverride) {
   const team = teamOverride || row.team || 'Transisi Internal';
-  const prefix = TEAM_PREFIX[team] || 'X';
-  if (team === 'Transisi Internal') {
-    let id = row.no || '';
-    if (/^[A-Z]/.test(id)) id = id.substring(1);
-    return prefix + id;
-  } else {
-    if (!usedIds[team]) usedIds[team] = new Set();
-    let n, id, attempts=0;
-    do {
-      n = Math.floor(Math.random()*900)+100;
-      id = prefix + n;
-      attempts++;
-      if (attempts > 500) break;
-    } while (usedIds[team].has(id));
-    usedIds[team].add(id);
-    return id;
-  }
+  const prefix = TEAM_PREFIX[team] || 'A';
+  let no = row.no || '';
+  if (/^[A-Z]/.test(no)) no = no.substring(1);
+  return prefix + no;
 }
 
-/* Splits ID into prefix letter + numeric part for big display */
 function splitId(id) {
   const m = id.match(/^([A-Z])(.*)$/);
   if (m) return { prefix: m[1], number: m[2] };
   return { prefix: '', number: id };
 }
 
-/* ---------- QR ---------- */
+/* ===================== QR ===================== */
 function generateQRDataURL(payload, size=300) {
   return new Promise((resolve) => {
     const tempDiv = document.createElement('div');
@@ -452,11 +805,11 @@ function generateQRDataURL(payload, size=300) {
       const dataUrl = cv ? cv.toDataURL() : '';
       document.body.removeChild(tempDiv);
       resolve(dataUrl);
-    }, 80);
+    }, 100);
   });
 }
 
-/* ---------- ROUNDED RECT ---------- */
+/* ===================== HELPERS ===================== */
 function roundRect(ctx, x, y, w, h, r) {
   if (typeof r === 'number') r = {tl:r,tr:r,br:r,bl:r};
   ctx.beginPath();
@@ -472,234 +825,6 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
-/* ---------- CARD RENDERING (matches reference layout) ---------- */
-async function renderCard(canvas, data, options={}) {
-  const ctx = canvas.getContext('2d');
-  const W = canvas.width, H = canvas.height;
-  const team = data.team || 'Transisi Internal';
-  const bgColor = TEAM_COLORS[team] || '#5680c1';
-
-  // Outer card with rounded corners
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0,0,W,H);
-
-  // Card body background (rounded)
-  ctx.save();
-  roundRect(ctx, 0, 0, W, H, 40);
-  ctx.clip();
-  ctx.fillStyle = bgColor;
-  ctx.fillRect(0,0,W,H);
-
-  // Subtle vertical lines pattern overlay
-  ctx.globalAlpha = 0.08;
-  ctx.strokeStyle = '#ffffff';
-  ctx.lineWidth = 1;
-  for (let x=0; x<W; x+=18) {
-    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
-  }
-  ctx.globalAlpha = 1;
-  ctx.restore();
-
-  /* ===== TOP LOGO BAR (white rounded box) ===== */
-  const topBoxX = 50, topBoxY = 50, topBoxW = W - 100, topBoxH = 170;
-  ctx.fillStyle = '#ffffff';
-  roundRect(ctx, topBoxX, topBoxY, topBoxW, topBoxH, 30);
-  ctx.fill();
-
-  // GBK logo (left half)
-  if (gbkLogoImg) {
-    const gW = 360, gH = 130;
-    const gX = topBoxX + (topBoxW/2) - gW + 60;
-    const gY = topBoxY + (topBoxH-gH)/2;
-    ctx.drawImage(gbkLogoImg, gX, gY, gW, gH);
-  }
-  // Kemensetneg logo (right of GBK)
-  if (kemensetnegLogoImg) {
-    const kSize = 150;
-    const kX = topBoxX + topBoxW/2 + 30;
-    const kY = topBoxY + (topBoxH-kSize)/2;
-    ctx.drawImage(kemensetnegLogoImg, kX, kY, kSize*0.85, kSize);
-  }
-
-  /* ===== TITLE TEXT (big white) ===== */
-  ctx.fillStyle = '#ffffff';
-  ctx.textAlign = 'center';
-  ctx.font = '900 64px Arial Black, Arial';
-  const titleText = (options.title || data.title || 'TIM PELAKSANA EKSEKUSI BLOK 15').toUpperCase();
-  wrapCenterText(ctx, titleText, W/2, topBoxY + topBoxH + 80, W - 120, 70);
-
-  /* ===== PHOTO ===== */
-  const photoW = 540, photoH = 600;
-  const photoX = (W - photoW)/2;
-  const photoY = 460;
-  // White border
-  ctx.fillStyle = '#ffffff';
-  roundRect(ctx, photoX-8, photoY-8, photoW+16, photoH+16, 18);
-  ctx.fill();
-  // Photo content
-  ctx.save();
-  roundRect(ctx, photoX, photoY, photoW, photoH, 12);
-  ctx.clip();
-  if (photoImg || options.photoImg) {
-    drawImageCover(ctx, options.photoImg || photoImg, photoX, photoY, photoW, photoH);
-  } else {
-    ctx.fillStyle = '#d6d6d6';
-    ctx.fillRect(photoX, photoY, photoW, photoH);
-    ctx.fillStyle = '#888';
-    ctx.font = '32px Arial';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('UPLOAD PHOTO', photoX + photoW/2, photoY + photoH/2);
-    ctx.textBaseline = 'alphabetic';
-  }
-  ctx.restore();
-
-  /* ===== NAME ===== */
-  ctx.fillStyle = '#ffffff';
-  ctx.textAlign = 'center';
-  ctx.font = '900 56px Arial Black, Arial';
-  const nameText = (data.name || '').toUpperCase();
-  // Auto-fit
-  let fSize = 56;
-  while (ctx.measureText(nameText).width > W - 140 && fSize > 32) {
-    fSize -= 2;
-    ctx.font = `900 ${fSize}px Arial Black, Arial`;
-  }
-  ctx.fillText(nameText, W/2, photoY + photoH + 90);
-
-  /* ===== BOTTOM WHITE INFO BOX (QR + Team + ID) ===== */
-  const infoBoxY = photoY + photoH + 130;
-  const infoBoxX = 50;
-  const infoBoxW = W - 100;
-  const infoBoxH = 320;
-  ctx.fillStyle = '#ffffff';
-  roundRect(ctx, infoBoxX, infoBoxY, infoBoxW, infoBoxH, 30);
-  ctx.fill();
-
-  // QR code area on left
-  const qrPad = 28;
-  const qrSize = infoBoxH - qrPad*2;
-  const qrX = infoBoxX + qrPad;
-  const qrY = infoBoxY + qrPad;
-
-  if (options.validationStamp) {
-    drawValidationStamp(ctx, qrX, qrY, qrSize, options.validationStamp);
-  } else {
-    const payload = `${window.location.origin}${window.location.pathname}?validate=${encodeURIComponent(data.id)}`;
-    const qrDataUrl = await generateQRDataURL(payload, 300);
-    if (qrDataUrl) {
-      const qrImg = await loadImage(qrDataUrl);
-      // light grey rounded background
-      ctx.fillStyle = '#eeeeee';
-      roundRect(ctx, qrX-6, qrY-6, qrSize+12, qrSize+12, 12);
-      ctx.fill();
-      ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
-    }
-  }
-
-  // Right side: Team label + ID big
-  const rightX = qrX + qrSize + 40;
-  const rightW = infoBoxX + infoBoxW - rightX - 30;
-  const rightCenterX = rightX + rightW/2;
-
-  // Team label
-  ctx.fillStyle = '#222';
-  ctx.font = '900 42px Arial Black, Arial';
-  ctx.textAlign = 'center';
-  let teamLabel = team.toUpperCase();
-  // auto-fit
-  let tfs = 42;
-  while (ctx.measureText(teamLabel).width > rightW && tfs > 24) {
-    tfs -= 2;
-    ctx.font = `900 ${tfs}px Arial Black, Arial`;
-  }
-  ctx.fillText(teamLabel, rightCenterX, infoBoxY + 100);
-
-  // ID big (prefix + number)
-  const idParts = splitId(data.id);
-  ctx.fillStyle = bgColor;
-  ctx.font = '900 110px Arial Black, Arial';
-  const idCombined = idParts.prefix + ' ' + idParts.number;
-  let ifs = 110;
-  while (ctx.measureText(idCombined).width > rightW && ifs > 60) {
-    ifs -= 4;
-    ctx.font = `900 ${ifs}px Arial Black, Arial`;
-  }
-  ctx.fillText(idCombined, rightCenterX, infoBoxY + 230);
-
-  // Expiration small text under ID
-  ctx.fillStyle = '#666';
-  ctx.font = '18px Arial';
-  ctx.fillText('Valid Until: ' + currentExpiration, rightCenterX, infoBoxY + 275);
-
-  /* ===== COLOR LEGEND PILLS (A B C D E F) ===== */
-  const pillsY = infoBoxY + infoBoxH + 35;
-  const pillW = 70, pillH = 50, pillGap = 18;
-  const totalPillsW = 6*pillW + 5*pillGap;
-  let pillX = (W - totalPillsW)/2;
-  const teams = ['Transisi Internal','Transisi Eksternal','Keamanan','Kebersihan','Media','Tamu/Tenant'];
-  const letters = ['A','B','C','D','E','F'];
-  for (let i=0; i<6; i++) {
-    const c = TEAM_COLORS[teams[i]];
-    const isActive = teams[i] === team;
-    ctx.fillStyle = c;
-    roundRect(ctx, pillX, pillsY, pillW, pillH, 14);
-    ctx.fill();
-    if (isActive) {
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 4;
-      roundRect(ctx, pillX-2, pillsY-2, pillW+4, pillH+4, 16);
-      ctx.stroke();
-    }
-    // letter
-    ctx.fillStyle = (letters[i]==='E') ? '#222' : '#222';
-    ctx.font = '900 32px Arial Black, Arial';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(letters[i], pillX + pillW/2, pillsY + pillH/2);
-    ctx.textBaseline = 'alphabetic';
-    pillX += pillW + pillGap;
-  }
-}
-
-function drawValidationStamp(ctx, x, y, size, type) {
-  ctx.save();
-  const cx = x + size/2;
-  const cy = y + size/2;
-  const r = size/2 - 8;
-  const isValid = type === 'VALID';
-  const color = isValid ? '#28a745' : '#dc3545';
-
-  // light background
-  ctx.fillStyle = '#f5f5f5';
-  roundRect(ctx, x, y, size, size, 12);
-  ctx.fill();
-
-  ctx.translate(cx, cy);
-  ctx.rotate(-Math.PI/12);
-
-  ctx.strokeStyle = color;
-  ctx.lineWidth = 10;
-  ctx.beginPath();
-  ctx.arc(0,0,r,0,Math.PI*2);
-  ctx.stroke();
-
-  ctx.lineWidth = 4;
-  ctx.beginPath();
-  ctx.arc(0,0,r-18,0,Math.PI*2);
-  ctx.stroke();
-
-  ctx.fillStyle = color;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.font = '900 56px Arial Black, Arial';
-  ctx.fillText(type, 0, -10);
-  ctx.font = 'bold 20px Arial';
-  ctx.fillText('VERIFIED', 0, 36);
-  ctx.restore();
-}
-
-/* ---------- HELPERS ---------- */
 function drawImageCover(ctx, img, x, y, w, h) {
   const iw = img.width, ih = img.height;
   const ir = iw/ih, dr = w/h;
@@ -732,6 +857,7 @@ function wrapCenterText(ctx, text, cx, y, maxW, lineH) {
   }
   if (line) lines.push(line.trim());
   lines.forEach((ln,i) => ctx.fillText(ln, cx, y + i*lineH));
+  return lines.length;
 }
 
 function showStatus(msg, type='info') {
@@ -740,128 +866,72 @@ function showStatus(msg, type='info') {
   el.textContent = msg;
 }
 
-/* ---------- PREVIEW ---------- */
-async function renderPreview() {
-  const sel = document.getElementById('personSelect');
-  const idx = sel.value;
-  const canvas = document.getElementById('cardCanvas');
-  if (idx === '' || !csvData[idx]) {
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#f8f9fa';
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-    ctx.fillStyle = '#999';
-    ctx.font = '40px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText('Select a person to preview ID card', canvas.width/2, canvas.height/2);
-    return;
+/* ===================== CARD RENDERING ===================== */
+async function renderCard(canvas, data, options={}) {
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const team = data.team || 'Transisi Internal';
+  const bgColor = TEAM_COLORS[team] || '#5680c1';
+  const isPrivacy = PRIVACY_TEAMS.has(team);
+
+  // Clear
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0,0,W,H);
+
+  // Card body
+  ctx.save();
+  roundRect(ctx, 0, 0, W, H, 40);
+  ctx.clip();
+  ctx.fillStyle = bgColor;
+  ctx.fillRect(0,0,W,H);
+
+  // Vertical lines pattern
+  ctx.globalAlpha = 0.08;
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 1;
+  for (let x=0; x<W; x+=18) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
   }
-  const row = csvData[idx];
-  const teamOverride = document.getElementById('teamSelect').value;
-  const team = teamOverride || row.team || 'Transisi Internal';
-  const id = getIdNumber(row, team);
-  const title = document.getElementById('titleInput').value;
-  await renderCard(canvas, {
-    id, name: row.name, unit: row.unit, team, title
-  });
-}
+  ctx.globalAlpha = 1;
+  ctx.restore();
 
-/* ---------- EXPORT ---------- */
-async function exportSingle(fmt) {
-  const sel = document.getElementById('personSelect');
-  if (sel.value === '') { showStatus('Please select a person first', 'error'); return; }
-  const canvas = document.getElementById('cardCanvas');
-  await renderPreview();
-  const row = csvData[sel.value];
-  const fname = `IDCard_${row.no}_${row.name.replace(/\s+/g,'_')}`;
-  if (fmt === 'png') canvas.toBlob(b => saveAs(b, fname + '.png'), 'image/png');
-  else if (fmt === 'jpg') canvas.toBlob(b => saveAs(b, fname + '.jpg'), 'image/jpeg', 0.95);
-  else if (fmt === 'pdf') {
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF({ orientation:'portrait', unit:'mm', format:[90,130] });
-    pdf.addImage(canvas.toDataURL('image/jpeg',0.95), 'JPEG', 0, 0, 90, 130);
-    pdf.save(fname + '.pdf');
+  /* ===== TOP LOGO BAR ===== */
+  const topBoxX = 50, topBoxY = 50, topBoxW = W - 100, topBoxH = 180;
+  ctx.fillStyle = '#ffffff';
+  roundRect(ctx, topBoxX, topBoxY, topBoxW, topBoxH, 30);
+  ctx.fill();
+
+  // GBK logo (left of center)
+  if (gbkLogoImg) {
+    const gW = 380, gH = 140;
+    const gX = topBoxX + 80;
+    const gY = topBoxY + (topBoxH-gH)/2;
+    ctx.drawImage(gbkLogoImg, gX, gY, gW, gH);
   }
-  showStatus('Exported: ' + fname, 'success');
-}
-
-async function batchExport() {
-  if (csvData.length === 0) { showStatus('No CSV data', 'error'); return; }
-  const progress = document.getElementById('progressContainer');
-  const bar = document.getElementById('progressBar');
-  progress.style.display = 'block';
-  bar.style.width = '0%';
-
-  const zip = new JSZip();
-  const tCanvas = document.createElement('canvas');
-  tCanvas.width = CARD_W; tCanvas.height = CARD_H;
-  usedIds = {};
-  const title = document.getElementById('titleInput').value;
-
-  for (let i=0; i<csvData.length; i++) {
-    const row = csvData[i];
-    const team = row.team || 'Transisi Internal';
-    const id = getIdNumber(row, team);
-    await renderCard(tCanvas, { id, name: row.name, unit: row.unit, team, title });
-    const dataUrl = tCanvas.toDataURL('image/png');
-    const base64 = dataUrl.split(',')[1];
-    const safeName = row.name.replace(/[^a-zA-Z0-9]/g, '_');
-    zip.file(`${id}_${safeName}.png`, base64, { base64: true });
-    bar.style.width = ((i+1)/csvData.length * 100) + '%';
-    showStatus(`Generating ${i+1}/${csvData.length}: ${row.name}`, 'info');
-    if (i % 3 === 0) await new Promise(r => setTimeout(r, 5));
+  // Kemensetneg logo (right of center)
+  if (kemensetnegLogoImg) {
+    const kH = 150, kW = kH * 0.85;
+    const kX = topBoxX + topBoxW - kW - 90;
+    const kY = topBoxY + (topBoxH-kH)/2;
+    ctx.drawImage(kemensetnegLogoImg, kX, kY, kW, kH);
   }
 
-  showStatus('Compressing ZIP...', 'info');
-  const blob = await zip.generateAsync({ type: 'blob' });
-  saveAs(blob, 'IDCards_Batch_' + Date.now() + '.zip');
-  showStatus(`✅ Batch export complete: ${csvData.length} cards`, 'success');
-  progress.style.display = 'none';
-}
+  /* ===== TITLE ===== */
+  ctx.fillStyle = '#ffffff';
+  ctx.textAlign = 'center';
+  ctx.font = '900 64px Montserrat, Arial Black, Arial';
+  const titleText = (options.title || data.title || 'TIM PELAKSANA EKSEKUSI BLOK 15').toUpperCase();
+  wrapCenterText(ctx, titleText, W/2, topBoxY + topBoxH + 80, W - 120, 72);
 
-/* ---------- VALIDATION VIEW ---------- */
-async function runValidationView(idParam) {
-  document.getElementById('generatorView').classList.add('hidden');
-  document.getElementById('validationView').classList.remove('hidden');
-  document.getElementById('validationTimestamp').textContent =
-    'Validation checked: ' + new Date().toLocaleString();
+  /* ===== PHOTO (hidden in privacy mode) ===== */
+  const photoW = 540, photoH = 600;
+  const photoX = (W - photoW)/2;
+  const photoY = 470;
 
-  const stored = localStorage.getItem('gbk_csv') || DEFAULT_CSV;
-  parseCsvText(stored);
+  if (!isPrivacy) {
+    // White border
+    ctx.fillStyle = '#ffffff';
+    roundRect(ctx, photoX-8, photoY-8, photoW+16, photoH+16, 18);
+    ctx.fill();
 
-  let match = csvData.find(r => {
-    const team = r.team || 'Transisi Internal';
-    const prefix = TEAM_PREFIX[team] || 'A';
-    let no = r.no || '';
-    if (/^[A-Z]/.test(no)) no = no.substring(1);
-    const computed = team === 'Transisi Internal' ? (prefix + no) : r.no;
-    return computed === idParam || r.no === idParam;
-  });
-
-  computeExpirationDate();
-  const canvas = document.getElementById('validationCanvas');
-  const resultEl = document.getElementById('validationResultText');
-
-  if (match) {
-    const team = match.team || 'Transisi Internal';
-    const prefix = TEAM_PREFIX[team] || 'A';
-    let no = match.no || '';
-    if (/^[A-Z]/.test(no)) no = no.substring(1);
-    const id = team === 'Transisi Internal' ? (prefix + no) : match.no;
-    await renderCard(canvas, {
-      id, name: match.name, unit: match.unit, team,
-      title: 'TIM PELAKSANA EKSEKUSI BLOK 15'
-    }, { validationStamp: 'VALID' });
-    resultEl.textContent = '✅ ID ' + idParam + ' is VALID - Verified against database';
-    resultEl.style.color = '#28a745';
-  } else {
-    await renderCard(canvas, {
-      id: idParam, name: 'UNKNOWN', unit: 'N/A', team: 'Transisi Internal',
-      title: 'TIM PELAKSANA EKSEKUSI BLOK 15'
-    }, { validationStamp: 'INVALID' });
-    resultEl.textContent = '❌ ID ' + idParam + ' is INVALID or not found';
-    resultEl.style.color = '#dc3545';
-  }
-}
-</script>
-</body>
-</html>
+    // Photo content - object-
