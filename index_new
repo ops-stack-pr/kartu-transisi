@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>GBK ID Card Generator</title>
+<!-- External Libraries -->
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 0;
+    background: #f0f2f5;
+    color: #222;
+  }
+  header {
+    background: linear-gradient(90deg, #5680c1, #3a5d9e);
+    color: #fff;
+    padding: 16px 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+  header h1 { margin: 0; font-size: 22px; }
+  header p { margin: 4px 0 0; font-size: 13px; opacity: 0.9; }
+  .container {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 20px;
+    padding: 20px;
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+  .panel {
+    background: #fff;
+    border-radius: 10px;
+    padding: 18px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  }
+  .panel h2 {
+    margin: 0 0 12px;
+    font-size: 16px;
+    color: #3a5d9e;
+    border-bottom: 2px solid #5680c1;
+    padding-bottom: 6px;
+  }
+  .form-group { margin-bottom: 12px; }
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: #555;
+  }
+  input[type="file"], input[type="text"], select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 13px;
+    background: #fff;
+  }
+  button {
+    background: #5680c1;
+    color: #fff;
+    border: none;
+    padding: 9px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    margin: 4px 4px 4px 0;
+    transition: background 0.2s;
+  }
+  button:hover { background: #3a5d9e; }
+  button.success { background: #28a745; }
+  button.success:hover { background: #1e7e34; }
+  button:disabled { background: #ccc; cursor: not-allowed; }
+  .preview-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  #cardCanvas {
+    max-width: 100%;
+    max-height: 90vh;
+    height: auto;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+    background: #fff;
+  }
+  .status {
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    margin-top: 10px;
+    display: none;
+  }
+  .status.info { background: #e3f2fd; color: #1565c0; display: block; }
+  .status.success { background: #e8f5e9; color: #2e7d32; display: block; }
+  .status.error { background: #ffebee; color: #c62828; display: block; }
+  .progress {
+    width: 100%;
+    height: 8px;
+    background: #eee;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 8px;
+    display: none;
+  }
+  .progress-bar {
+    height: 100%;
+    background: #5680c1;
+    width: 0;
+    transition: width 0.2s;
+  }
+  .validation-view {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: #f0f2f5;
+  }
+  .validation-view canvas {
+    max-width: 95%;
+    max-height: 80vh;
+    height: auto;
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  }
+  .v-header { text-align: center; margin-bottom: 16px; }
+  .v-header h1 { margin: 0; color: #3a5d9e; }
+  .v-header .timestamp { font-size: 13px; color: #555; margin-top: 6px; }
+  .hidden { display: none !important; }
+  .info-row { font-size: 12px; color: #666; margin-top: 6px; }
+  @media (max-width: 900px) {
+    .container { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ GENERATOR VIEW ============ -->
+<div id="generatorView">
+  <header>
+    <h1>🎫 GBK ID Card Generator</h1>
+    <p>Sekretariat Negara RI - PPKGBK | Batch ID Card Generation with QR Validation</p>
+  </header>
+
+  <div class="container">
+    <!-- Control Panel -->
+    <div class="panel">
+      <h2>1. Data & Photo</h2>
+      <div class="form-group">
+        <label>CSV File (optional)</label>
+        <input type="file" id="csvUpload" accept=".csv" />
+      </div>
+      <div class="form-group">
+        <label>Person Photo</label>
+        <input type="file" id="photoUpload" accept="image/*" />
+      </div>
+
+      <h2 style="margin-top:18px;">2. Select Entry</h2>
+      <div class="form-group">
+        <label>Person (from CSV)</label>
+        <select id="personSelect"><option value="">-- Select --</option></select>
+      </div>
+      <div class="form-group">
+        <label>Team (override)</label>
+        <select id="teamSelect">
+          <option value="">-- Auto from CSV --</option>
+          <option value="Transisi Internal">Transisi Internal</option>
+          <option value="Transisi Eksternal">Transisi Eksternal</option>
+          <option value="Keamanan">Keamanan</option>
+          <option value="Kebersihan">Kebersihan</option>
+          <option value="Media">Media</option>
+          <option value="Tamu/Tenant">Tamu/Tenant</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Title Line (e.g., TIM PELAKSANA EKSEKUSI BLOK 15)</label>
+        <input type="text" id="titleInput" value="TIM PELAKSANA EKSEKUSI BLOK 15" />
+      </div>
+
+      <h2 style="margin-top:18px;">3. Export</h2>
+      <button onclick="exportSingle('png')">PNG</button>
+      <button onclick="exportSingle('jpg')">JPG</button>
+      <button onclick="exportSingle('pdf')">PDF</button>
+      <br/>
+      <button class="success" onclick="batchExport()">📦 Batch Export ZIP (All)</button>
+
+      <div class="progress" id="progressContainer">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+      <div class="status" id="statusMsg"></div>
+      <div class="info-row">Total entries loaded: <span id="entryCount">0</span></div>
+    </div>
+
+    <!-- Preview Panel -->
+    <div class="panel preview-area">
+      <h2 style="align-self:flex-start;">Live Preview</h2>
+      <canvas id="cardCanvas" width="1063" height="1535"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- ============ VALIDATION VIEW ============ -->
+<div id="validationView" class="validation-view hidden">
+  <div class="v-header">
+    <h1>🔐 ID Card Validation</h1>
+    <div class="timestamp" id="validationTimestamp"></div>
+  </div>
+  <canvas id="validationCanvas" width="1063" height="1535"></canvas>
+  <div id="validationResultText" style="margin-top:16px; font-size:18px; font-weight:bold;"></div>
+</div>
+
+<script>
+/* =============================================================
+   GBK ID CARD GENERATOR - v2 (matches reference design)
+   ============================================================= */
+
+const TEAM_COLORS = {
+  "Transisi Internal": "#5680c1",
+  "Transisi Eksternal": "#68bd45",
+  "Keamanan": "#ed1e24",
+  "Kebersihan": "#f89a1c",
+  "Media": "#f6eb19",
+  "Tamu/Tenant": "#b9519e"
+};
+const TEAM_PREFIX = {
+  "Transisi Internal": "A",
+  "Transisi Eksternal": "B",
+  "Keamanan": "C",
+  "Kebersihan": "D",
+  "Media": "E",
+  "Tamu/Tenant": "F"
+};
+const CARD_W = 1063;
+const CARD_H = 1535;
+
+let csvData = [];
+let photoImg = null;
+let usedIds = {};
+let currentExpiration = "";
+let gbkLogoImg = null;
+let kemensetnegLogoImg = null;
+
+/* ---------- DEFAULT CSV ---------- */
+const DEFAULT_CSV = `No,Name,Unit Kerja,Team Classifed
+A001,Rakhmadi A. Kusumo,PPKGBK,Transisi Internal
+002,Hendry Arisandi,PPKGBK,Transisi Internal
+003,M. Rofik Anwar,PPKGBK,Transisi Internal
+004,Hadi Sulistia,PPKGBK,Transisi Internal
+005,Afrizal P. Hananto,PPKGBK,Transisi Internal
+006,Asep Triyadi,PPKGBK,Transisi Internal
+007,Leonardo Sipayung,PPKGBK,Transisi Internal
+008,Sri Lestari Puji Astuti,PPKGBK,Transisi Internal
+009,Jujuk Bandung Windargo,PPKGBK,Transisi Internal
+010,Hariyadi,PPKGBK,Transisi Internal
+011,David Prastyan,PPKGBK,Transisi Internal
+012,Muhammad Trinugroho W.,PPKGBK,Transisi Internal
+013,Yayu Srie Rahayu,PPKGBK,Transisi Internal
+014,Brita Setiawati,PPKGBK,Transisi Internal
+015,Mulyadi Sidik,PPKGBK,Transisi Internal
+016,Sukamto,PPKGBK,Transisi Internal
+017,Nathanael Sitepu,PPKGBK,Transisi Internal
+018,Yos Fauzi Nur Muhammad,PPKGBK,Transisi Internal
+019,Denny Lestiyana,PPKGBK,Transisi Internal
+020,Dadi Setyanto,PPKGBK,Transisi Internal
+071,Aruna Irani,Bidang Aset PPKGBK,Transisi Internal
+081,Rama Suwardika,Bidang Hukum dan Kehumasan PPKGBK,Transisi Internal
+089,Hashifah Nabilah,Bidang Keuangan PPKGBK,Transisi Internal
+095,Audia Cendekiawati,Bidang Transisi Event dan Pelanggan PPKGBK,Transisi Internal
+097,Linda Sri Mulyati,Bidang Operasional PPKGBK,Transisi Internal
+100,Abdal Hiyariijal,"Bidang Pengamanan, SDM, dan Umum PPKGBK",Transisi Internal
+113,Renaldi Alamsyah,"Bidang Teknis, Pemeliharaan dan IT PPKGBK",Transisi Internal
+132,Widi Megantoro,Kementerian Sekretariat Negara,Transisi Internal
+202,ANDRES AZHARI,PT ISS Indonesia,Transisi Internal`;
+
+/* ---------- INLINE SVG LOGOS (so they always render) ---------- */
+const GBK_LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 160">
+  <text x="0" y="135" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="170" fill="#d8232a" letter-spacing="-6">GBK</text>
+</svg>`;
+
+const KEMENSETNEG_LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240">
+  <g>
+    <!-- Wreath circle -->
+    <ellipse cx="100" cy="105" rx="92" ry="92" fill="none" stroke="#d4b015" stroke-width="6"/>
+    <ellipse cx="100" cy="105" rx="80" ry="80" fill="none" stroke="#d4b015" stroke-width="3"/>
+    <!-- Star -->
+    <polygon points="100,45 117,98 173,98 128,131 145,184 100,151 55,184 72,131 27,98 83,98"
+             fill="#f7c91f" stroke="#c39a00" stroke-width="2"/>
+    <!-- Text -->
+    <text x="100" y="215" text-anchor="middle" font-family="Arial Black, Arial" font-weight="900" font-size="18" fill="#003a8c">KEMENTERIAN</text>
+    <text x="100" y="233" text-anchor="middle" font-family="Arial Black, Arial" font-weight="900" font-size="15" fill="#003a8c">SEKRETARIAT NEGARA</text>
+  </g>
+</svg>`;
+
+function svgToImage(svg) {
+  return new Promise(resolve => {
+    const blob = new Blob([svg], { type: 'image/svg+xml' });
+    const url = URL.createObjectURL(blob);
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => resolve(null);
+    img.src = url;
+  });
+}
+
+/* ---------- INIT ---------- */
+window.addEventListener('DOMContentLoaded', async () => {
+  // preload logos
+  gbkLogoImg = await svgToImage(GBK_LOGO_SVG);
+  kemensetnegLogoImg = await svgToImage(KEMENSETNEG_LOGO_SVG);
+
+  const params = new URLSearchParams(window.location.search);
+  if (params.has('validate')) {
+    runValidationView(params.get('validate'));
+  } else {
+    initGenerator();
+  }
+});
+
+function initGenerator() {
+  const stored = localStorage.getItem('gbk_csv');
+  if (stored) parseCsvText(stored);
+  else { parseCsvText(DEFAULT_CSV); localStorage.setItem('gbk_csv', DEFAULT_CSV); }
+
+  document.getElementById('csvUpload').addEventListener('change', handleCsvUpload);
+  document.getElementById('photoUpload').addEventListener('change', handlePhotoUpload);
+  document.getElementById('personSelect').addEventListener('change', renderPreview);
+  document.getElementById('teamSelect').addEventListener('change', renderPreview);
+  document.getElementById('titleInput').addEventListener('input', renderPreview);
+
+  computeExpirationDate();
+  renderPreview();
+}
+
+function computeExpirationDate() {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() + 1);
+  const dd = String(d.getDate()).padStart(2,'0');
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  currentExpiration = `${dd}/${mm}/${d.getFullYear()}`;
+}
+
+/* ---------- CSV ---------- */
+function handleCsvUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    localStorage.setItem('gbk_csv', ev.target.result);
+    parseCsvText(ev.target.result);
+    showStatus('CSV loaded: ' + csvData.length + ' rows', 'success');
+  };
+  reader.readAsText(file);
+}
+
+function parseCsvText(text) {
+  let result = Papa.parse(text, { header: true, skipEmptyLines: true });
+  if (result.data.length > 0 && Object.keys(result.data[0]).length < 2) {
+    result = Papa.parse(text, { header: true, delimiter: '\t', skipEmptyLines: true });
+  }
+  csvData = result.data.map(row => {
+    const norm = {};
+    for (const k in row) norm[k.trim()] = (row[k]||'').toString().trim();
+    return {
+      no: norm['No'] || norm['NO'] || '',
+      name: norm['Name'] || norm['Nama'] || '',
+      unit: norm['Unit Kerja'] || '',
+      team: norm['Team Classifed'] || norm['Team Classified'] || norm['Team'] || ''
+    };
+  }).filter(r => r.name);
+  populatePersonSelect();
+  document.getElementById('entryCount').textContent = csvData.length;
+}
+
+function populatePersonSelect() {
+  const sel = document.getElementById('personSelect');
+  sel.innerHTML = '<option value="">-- Select --</option>';
+  csvData.forEach((row, i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = `${row.no} - ${row.name}`;
+    sel.appendChild(opt);
+  });
+}
+
+/* ---------- PHOTO ---------- */
+function handlePhotoUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const img = new Image();
+    img.onload = () => { photoImg = img; renderPreview(); };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ---------- ID NUMBER ---------- */
+function getIdNumber(row, teamOverride) {
+  const team = teamOverride || row.team || 'Transisi Internal';
+  const prefix = TEAM_PREFIX[team] || 'X';
+  if (team === 'Transisi Internal') {
+    let id = row.no || '';
+    if (/^[A-Z]/.test(id)) id = id.substring(1);
+    return prefix + id;
+  } else {
+    if (!usedIds[team]) usedIds[team] = new Set();
+    let n, id, attempts=0;
+    do {
+      n = Math.floor(Math.random()*900)+100;
+      id = prefix + n;
+      attempts++;
+      if (attempts > 500) break;
+    } while (usedIds[team].has(id));
+    usedIds[team].add(id);
+    return id;
+  }
+}
+
+/* Splits ID into prefix letter + numeric part for big display */
+function splitId(id) {
+  const m = id.match(/^([A-Z])(.*)$/);
+  if (m) return { prefix: m[1], number: m[2] };
+  return { prefix: '', number: id };
+}
+
+/* ---------- QR ---------- */
+function generateQRDataURL(payload, size=300) {
+  return new Promise((resolve) => {
+    const tempDiv = document.createElement('div');
+    tempDiv.style.position = 'absolute';
+    tempDiv.style.left = '-9999px';
+    document.body.appendChild(tempDiv);
+    new QRCode(tempDiv, {
+      text: payload,
+      width: size,
+      height: size,
+      correctLevel: QRCode.CorrectLevel.H
+    });
+    setTimeout(() => {
+      const cv = tempDiv.querySelector('canvas');
+      const dataUrl = cv ? cv.toDataURL() : '';
+      document.body.removeChild(tempDiv);
+      resolve(dataUrl);
+    }, 80);
+  });
+}
+
+/* ---------- ROUNDED RECT ---------- */
+function roundRect(ctx, x, y, w, h, r) {
+  if (typeof r === 'number') r = {tl:r,tr:r,br:r,bl:r};
+  ctx.beginPath();
+  ctx.moveTo(x + r.tl, y);
+  ctx.lineTo(x + w - r.tr, y);
+  ctx.quadraticCurveTo(x+w, y, x+w, y+r.tr);
+  ctx.lineTo(x+w, y+h-r.br);
+  ctx.quadraticCurveTo(x+w, y+h, x+w-r.br, y+h);
+  ctx.lineTo(x+r.bl, y+h);
+  ctx.quadraticCurveTo(x, y+h, x, y+h-r.bl);
+  ctx.lineTo(x, y+r.tl);
+  ctx.quadraticCurveTo(x, y, x+r.tl, y);
+  ctx.closePath();
+}
+
+/* ---------- CARD RENDERING (matches reference layout) ---------- */
+async function renderCard(canvas, data, options={}) {
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const team = data.team || 'Transisi Internal';
+  const bgColor = TEAM_COLORS[team] || '#5680c1';
+
+  // Outer card with rounded corners
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0,0,W,H);
+
+  // Card body background (rounded)
+  ctx.save();
+  roundRect(ctx, 0, 0, W, H, 40);
+  ctx.clip();
+  ctx.fillStyle = bgColor;
+  ctx.fillRect(0,0,W,H);
+
+  // Subtle vertical lines pattern overlay
+  ctx.globalAlpha = 0.08;
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 1;
+  for (let x=0; x<W; x+=18) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+  ctx.restore();
+
+  /* ===== TOP LOGO BAR (white rounded box) ===== */
+  const topBoxX = 50, topBoxY = 50, topBoxW = W - 100, topBoxH = 170;
+  ctx.fillStyle = '#ffffff';
+  roundRect(ctx, topBoxX, topBoxY, topBoxW, topBoxH, 30);
+  ctx.fill();
+
+  // GBK logo (left half)
+  if (gbkLogoImg) {
+    const gW = 360, gH = 130;
+    const gX = topBoxX + (topBoxW/2) - gW + 60;
+    const gY = topBoxY + (topBoxH-gH)/2;
+    ctx.drawImage(gbkLogoImg, gX, gY, gW, gH);
+  }
+  // Kemensetneg logo (right of GBK)
+  if (kemensetnegLogoImg) {
+    const kSize = 150;
+    const kX = topBoxX + topBoxW/2 + 30;
+    const kY = topBoxY + (topBoxH-kSize)/2;
+    ctx.drawImage(kemensetnegLogoImg, kX, kY, kSize*0.85, kSize);
+  }
+
+  /* ===== TITLE TEXT (big white) ===== */
+  ctx.fillStyle = '#ffffff';
+  ctx.textAlign = 'center';
+  ctx.font = '900 64px Arial Black, Arial';
+  const titleText = (options.title || data.title || 'TIM PELAKSANA EKSEKUSI BLOK 15').toUpperCase();
+  wrapCenterText(ctx, titleText, W/2, topBoxY + topBoxH + 80, W - 120, 70);
+
+  /* ===== PHOTO ===== */
+  const photoW = 540, photoH = 600;
+  const photoX = (W - photoW)/2;
+  const photoY = 460;
+  // White border
+  ctx.fillStyle = '#ffffff';
+  roundRect(ctx, photoX-8, photoY-8, photoW+16, photoH+16, 18);
+  ctx.fill();
+  // Photo content
+  ctx.save();
+  roundRect(ctx, photoX, photoY, photoW, photoH, 12);
+  ctx.clip();
+  if (photoImg || options.photoImg) {
+    drawImageCover(ctx, options.photoImg || photoImg, photoX, photoY, photoW, photoH);
+  } else {
+    ctx.fillStyle = '#d6d6d6';
+    ctx.fillRect(photoX, photoY, photoW, photoH);
+    ctx.fillStyle = '#888';
+    ctx.font = '32px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('UPLOAD PHOTO', photoX + photoW/2, photoY + photoH/2);
+    ctx.textBaseline = 'alphabetic';
+  }
+  ctx.restore();
+
+  /* ===== NAME ===== */
+  ctx.fillStyle = '#ffffff';
+  ctx.textAlign = 'center';
+  ctx.font = '900 56px Arial Black, Arial';
+  const nameText = (data.name || '').toUpperCase();
+  // Auto-fit
+  let fSize = 56;
+  while (ctx.measureText(nameText).width > W - 140 && fSize > 32) {
+    fSize -= 2;
+    ctx.font = `900 ${fSize}px Arial Black, Arial`;
+  }
+  ctx.fillText(nameText, W/2, photoY + photoH + 90);
+
+  /* ===== BOTTOM WHITE INFO BOX (QR + Team + ID) ===== */
+  const infoBoxY = photoY + photoH + 130;
+  const infoBoxX = 50;
+  const infoBoxW = W - 100;
+  const infoBoxH = 320;
+  ctx.fillStyle = '#ffffff';
+  roundRect(ctx, infoBoxX, infoBoxY, infoBoxW, infoBoxH, 30);
+  ctx.fill();
+
+  // QR code area on left
+  const qrPad = 28;
+  const qrSize = infoBoxH - qrPad*2;
+  const qrX = infoBoxX + qrPad;
+  const qrY = infoBoxY + qrPad;
+
+  if (options.validationStamp) {
+    drawValidationStamp(ctx, qrX, qrY, qrSize, options.validationStamp);
+  } else {
+    const payload = `${window.location.origin}${window.location.pathname}?validate=${encodeURIComponent(data.id)}`;
+    const qrDataUrl = await generateQRDataURL(payload, 300);
+    if (qrDataUrl) {
+      const qrImg = await loadImage(qrDataUrl);
+      // light grey rounded background
+      ctx.fillStyle = '#eeeeee';
+      roundRect(ctx, qrX-6, qrY-6, qrSize+12, qrSize+12, 12);
+      ctx.fill();
+      ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
+    }
+  }
+
+  // Right side: Team label + ID big
+  const rightX = qrX + qrSize + 40;
+  const rightW = infoBoxX + infoBoxW - rightX - 30;
+  const rightCenterX = rightX + rightW/2;
+
+  // Team label
+  ctx.fillStyle = '#222';
+  ctx.font = '900 42px Arial Black, Arial';
+  ctx.textAlign = 'center';
+  let teamLabel = team.toUpperCase();
+  // auto-fit
+  let tfs = 42;
+  while (ctx.measureText(teamLabel).width > rightW && tfs > 24) {
+    tfs -= 2;
+    ctx.font = `900 ${tfs}px Arial Black, Arial`;
+  }
+  ctx.fillText(teamLabel, rightCenterX, infoBoxY + 100);
+
+  // ID big (prefix + number)
+  const idParts = splitId(data.id);
+  ctx.fillStyle = bgColor;
+  ctx.font = '900 110px Arial Black, Arial';
+  const idCombined = idParts.prefix + ' ' + idParts.number;
+  let ifs = 110;
+  while (ctx.measureText(idCombined).width > rightW && ifs > 60) {
+    ifs -= 4;
+    ctx.font = `900 ${ifs}px Arial Black, Arial`;
+  }
+  ctx.fillText(idCombined, rightCenterX, infoBoxY + 230);
+
+  // Expiration small text under ID
+  ctx.fillStyle = '#666';
+  ctx.font = '18px Arial';
+  ctx.fillText('Valid Until: ' + currentExpiration, rightCenterX, infoBoxY + 275);
+
+  /* ===== COLOR LEGEND PILLS (A B C D E F) ===== */
+  const pillsY = infoBoxY + infoBoxH + 35;
+  const pillW = 70, pillH = 50, pillGap = 18;
+  const totalPillsW = 6*pillW + 5*pillGap;
+  let pillX = (W - totalPillsW)/2;
+  const teams = ['Transisi Internal','Transisi Eksternal','Keamanan','Kebersihan','Media','Tamu/Tenant'];
+  const letters = ['A','B','C','D','E','F'];
+  for (let i=0; i<6; i++) {
+    const c = TEAM_COLORS[teams[i]];
+    const isActive = teams[i] === team;
+    ctx.fillStyle = c;
+    roundRect(ctx, pillX, pillsY, pillW, pillH, 14);
+    ctx.fill();
+    if (isActive) {
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 4;
+      roundRect(ctx, pillX-2, pillsY-2, pillW+4, pillH+4, 16);
+      ctx.stroke();
+    }
+    // letter
+    ctx.fillStyle = (letters[i]==='E') ? '#222' : '#222';
+    ctx.font = '900 32px Arial Black, Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(letters[i], pillX + pillW/2, pillsY + pillH/2);
+    ctx.textBaseline = 'alphabetic';
+    pillX += pillW + pillGap;
+  }
+}
+
+function drawValidationStamp(ctx, x, y, size, type) {
+  ctx.save();
+  const cx = x + size/2;
+  const cy = y + size/2;
+  const r = size/2 - 8;
+  const isValid = type === 'VALID';
+  const color = isValid ? '#28a745' : '#dc3545';
+
+  // light background
+  ctx.fillStyle = '#f5f5f5';
+  roundRect(ctx, x, y, size, size, 12);
+  ctx.fill();
+
+  ctx.translate(cx, cy);
+  ctx.rotate(-Math.PI/12);
+
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 10;
+  ctx.beginPath();
+  ctx.arc(0,0,r,0,Math.PI*2);
+  ctx.stroke();
+
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.arc(0,0,r-18,0,Math.PI*2);
+  ctx.stroke();
+
+  ctx.fillStyle = color;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.font = '900 56px Arial Black, Arial';
+  ctx.fillText(type, 0, -10);
+  ctx.font = 'bold 20px Arial';
+  ctx.fillText('VERIFIED', 0, 36);
+  ctx.restore();
+}
+
+/* ---------- HELPERS ---------- */
+function drawImageCover(ctx, img, x, y, w, h) {
+  const iw = img.width, ih = img.height;
+  const ir = iw/ih, dr = w/h;
+  let sx=0, sy=0, sw=iw, sh=ih;
+  if (ir > dr) { sw = ih * dr; sx = (iw-sw)/2; }
+  else { sh = iw / dr; sy = (ih-sh)/2; }
+  ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
+}
+
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
+function wrapCenterText(ctx, text, cx, y, maxW, lineH) {
+  const words = text.split(' ');
+  const lines = [];
+  let line = '';
+  for (let i=0; i<words.length; i++) {
+    const test = line + words[i] + ' ';
+    if (ctx.measureText(test).width > maxW && line) {
+      lines.push(line.trim());
+      line = words[i] + ' ';
+    } else line = test;
+  }
+  if (line) lines.push(line.trim());
+  lines.forEach((ln,i) => ctx.fillText(ln, cx, y + i*lineH));
+}
+
+function showStatus(msg, type='info') {
+  const el = document.getElementById('statusMsg');
+  el.className = 'status ' + type;
+  el.textContent = msg;
+}
+
+/* ---------- PREVIEW ---------- */
+async function renderPreview() {
+  const sel = document.getElementById('personSelect');
+  const idx = sel.value;
+  const canvas = document.getElementById('cardCanvas');
+  if (idx === '' || !csvData[idx]) {
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#f8f9fa';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = '#999';
+    ctx.font = '40px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('Select a person to preview ID card', canvas.width/2, canvas.height/2);
+    return;
+  }
+  const row = csvData[idx];
+  const teamOverride = document.getElementById('teamSelect').value;
+  const team = teamOverride || row.team || 'Transisi Internal';
+  const id = getIdNumber(row, team);
+  const title = document.getElementById('titleInput').value;
+  await renderCard(canvas, {
+    id, name: row.name, unit: row.unit, team, title
+  });
+}
+
+/* ---------- EXPORT ---------- */
+async function exportSingle(fmt) {
+  const sel = document.getElementById('personSelect');
+  if (sel.value === '') { showStatus('Please select a person first', 'error'); return; }
+  const canvas = document.getElementById('cardCanvas');
+  await renderPreview();
+  const row = csvData[sel.value];
+  const fname = `IDCard_${row.no}_${row.name.replace(/\s+/g,'_')}`;
+  if (fmt === 'png') canvas.toBlob(b => saveAs(b, fname + '.png'), 'image/png');
+  else if (fmt === 'jpg') canvas.toBlob(b => saveAs(b, fname + '.jpg'), 'image/jpeg', 0.95);
+  else if (fmt === 'pdf') {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ orientation:'portrait', unit:'mm', format:[90,130] });
+    pdf.addImage(canvas.toDataURL('image/jpeg',0.95), 'JPEG', 0, 0, 90, 130);
+    pdf.save(fname + '.pdf');
+  }
+  showStatus('Exported: ' + fname, 'success');
+}
+
+async function batchExport() {
+  if (csvData.length === 0) { showStatus('No CSV data', 'error'); return; }
+  const progress = document.getElementById('progressContainer');
+  const bar = document.getElementById('progressBar');
+  progress.style.display = 'block';
+  bar.style.width = '0%';
+
+  const zip = new JSZip();
+  const tCanvas = document.createElement('canvas');
+  tCanvas.width = CARD_W; tCanvas.height = CARD_H;
+  usedIds = {};
+  const title = document.getElementById('titleInput').value;
+
+  for (let i=0; i<csvData.length; i++) {
+    const row = csvData[i];
+    const team = row.team || 'Transisi Internal';
+    const id = getIdNumber(row, team);
+    await renderCard(tCanvas, { id, name: row.name, unit: row.unit, team, title });
+    const dataUrl = tCanvas.toDataURL('image/png');
+    const base64 = dataUrl.split(',')[1];
+    const safeName = row.name.replace(/[^a-zA-Z0-9]/g, '_');
+    zip.file(`${id}_${safeName}.png`, base64, { base64: true });
+    bar.style.width = ((i+1)/csvData.length * 100) + '%';
+    showStatus(`Generating ${i+1}/${csvData.length}: ${row.name}`, 'info');
+    if (i % 3 === 0) await new Promise(r => setTimeout(r, 5));
+  }
+
+  showStatus('Compressing ZIP...', 'info');
+  const blob = await zip.generateAsync({ type: 'blob' });
+  saveAs(blob, 'IDCards_Batch_' + Date.now() + '.zip');
+  showStatus(`✅ Batch export complete: ${csvData.length} cards`, 'success');
+  progress.style.display = 'none';
+}
+
+/* ---------- VALIDATION VIEW ---------- */
+async function runValidationView(idParam) {
+  document.getElementById('generatorView').classList.add('hidden');
+  document.getElementById('validationView').classList.remove('hidden');
+  document.getElementById('validationTimestamp').textContent =
+    'Validation checked: ' + new Date().toLocaleString();
+
+  const stored = localStorage.getItem('gbk_csv') || DEFAULT_CSV;
+  parseCsvText(stored);
+
+  let match = csvData.find(r => {
+    const team = r.team || 'Transisi Internal';
+    const prefix = TEAM_PREFIX[team] || 'A';
+    let no = r.no || '';
+    if (/^[A-Z]/.test(no)) no = no.substring(1);
+    const computed = team === 'Transisi Internal' ? (prefix + no) : r.no;
+    return computed === idParam || r.no === idParam;
+  });
+
+  computeExpirationDate();
+  const canvas = document.getElementById('validationCanvas');
+  const resultEl = document.getElementById('validationResultText');
+
+  if (match) {
+    const team = match.team || 'Transisi Internal';
+    const prefix = TEAM_PREFIX[team] || 'A';
+    let no = match.no || '';
+    if (/^[A-Z]/.test(no)) no = no.substring(1);
+    const id = team === 'Transisi Internal' ? (prefix + no) : match.no;
+    await renderCard(canvas, {
+      id, name: match.name, unit: match.unit, team,
+      title: 'TIM PELAKSANA EKSEKUSI BLOK 15'
+    }, { validationStamp: 'VALID' });
+    resultEl.textContent = '✅ ID ' + idParam + ' is VALID - Verified against database';
+    resultEl.style.color = '#28a745';
+  } else {
+    await renderCard(canvas, {
+      id: idParam, name: 'UNKNOWN', unit: 'N/A', team: 'Transisi Internal',
+      title: 'TIM PELAKSANA EKSEKUSI BLOK 15'
+    }, { validationStamp: 'INVALID' });
+    resultEl.textContent = '❌ ID ' + idParam + ' is INVALID or not found';
+    resultEl.style.color = '#dc3545';
+  }
+}
+</script>
+</body>
+</html>
