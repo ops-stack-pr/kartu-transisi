@@ -490,9 +490,8 @@ function makeLogos() {
     let done = 0;
     const check = () => { done++; if (done === 2) resolve(); };
 
-    // Real PNG files (same folder as your HTML/JS)
-    const gbkPng = "Company Logo_GBK.png";
-    const kemPng = "Company Logo_Kemensetneg.png";
+   const gbkPng = "images/Company Logo_GBK.png";
+   const kemPng = "images/Company Logo_Kemensetneg.png";
 
     const g = new Image();
     g.onload = () => { gbkLogoImg = g; check(); };
