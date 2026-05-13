@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -725,17 +726,15 @@ async function renderCard(canvas, data, options) {
   if (options.stamp) {
     drawStamp(ctx, qX, qY, qSize, options.stamp);
   } else {
-   // Save photo to localStorage keyed by ID so validation can retrieve it
-if (photoImg) {
-  try {
-    const tmpCv = document.createElement('canvas');
-    tmpCv.width = 300; tmpCv.height = 350;
-    const tctx = tmpCv.getContext('2d');
-    imgCover(tctx, photoImg, 0, 0, 300, 350);
-    localStorage.setItem('photo_' + data.id, tmpCv.toDataURL('image/jpeg', 0.7));
-  } catch(e) { console.warn('Photo cache failed', e); }
-}
-const payload = `${window.location.origin}${window.location.pathname}?mode=verify&id=${encodeURIComponent(data.id)}`;
+    const payload = `${window.location.origin}${window.location.pathname}?mode=verify&id=${encodeURIComponent(data.id)}`;
+    const qrUrl = await makeQR(payload, 280);
+    if (qrUrl) {
+      const qImg = new Image();
+      await new Promise(r => { qImg.onload = r; qImg.onerror = r; qImg.src = qrUrl; });
+      ctx.fillStyle = '#eee';
+      rr(ctx, qX-6, qY-6, qSize+12, qSize+12, 12);
+      ctx.fill();
+      ctx.drawImage(qImg, qX, qY, qSize, qSize);
     }
   }
 
@@ -910,17 +909,6 @@ async function runValidation(idParam) {
   document.getElementById('validationTimestamp').textContent = 'Checked: ' + new Date().toLocaleString();
   await makeLogos();
 
-  // 🔽 NEW: Load cached photo for this ID
-  const cachedPhoto = localStorage.getItem('photo_' + idParam);
-  if (cachedPhoto) {
-    await new Promise(resolve => {
-      const img = new Image();
-      img.onload = () => { photoImg = img; resolve(); };
-      img.onerror = resolve;
-      img.src = cachedPhoto;
-    });
-  }
-
   const match = DATA.find(r => displayId(r, r.team) === idParam || r.no === idParam);
   const canvas = document.getElementById('validationCanvas');
   const resultEl = document.getElementById('validationResultText');
@@ -1022,3 +1010,4 @@ document.addEventListener('DOMContentLoaded', async () => {
 </script>
 </body>
 </html>
+```
