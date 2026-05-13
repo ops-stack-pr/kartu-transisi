@@ -490,18 +490,19 @@ function makeLogos() {
     let done = 0;
     const check = () => { done++; if (done === 2) resolve(); };
 
-    const gbkSvg = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 480 160'><text x='240' y='138' text-anchor='middle' font-family='Arial Black, Arial' font-weight='900' font-size='180' fill='%23d8232a' letter-spacing='-8'>GBK</text></svg>`;
-    const kemSvg = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 240'><ellipse cx='100' cy='100' rx='92' ry='92' fill='none' stroke='%23d4b015' stroke-width='7'/><ellipse cx='100' cy='100' rx='78' ry='78' fill='none' stroke='%23d4b015' stroke-width='4'/><polygon points='100,40 117,93 173,93 128,126 145,179 100,146 55,179 72,126 27,93 83,93' fill='%23f7c91f' stroke='%23c39a00' stroke-width='2'/><text x='100' y='215' text-anchor='middle' font-family='Arial Black, Arial' font-weight='900' font-size='20' fill='%23003a8c'>KEMENTERIAN</text><text x='100' y='234' text-anchor='middle' font-family='Arial Black, Arial' font-weight='900' font-size='16' fill='%23003a8c'>SEKRETARIAT NEGARA</text></svg>`;
+    // Real PNG files (same folder as your HTML/JS)
+    const gbkPng = "Company Logo_GBK.png";
+    const kemPng = "Company Logo_Kemensetneg.png";
 
     const g = new Image();
     g.onload = () => { gbkLogoImg = g; check(); };
     g.onerror = check;
-    g.src = gbkSvg;
+    g.src = gbkPng;
 
     const k = new Image();
     k.onload = () => { kemensetnegLogoImg = k; check(); };
     k.onerror = check;
-    k.src = kemSvg;
+    k.src = kemPng;
   });
 }
 
