@@ -24,17 +24,15 @@
     margin: 0;
     background: #f0f2f5;
     color: #222;
-    text-transform: uppercase;
     font-weight: 700;
   }
   header {
     background: linear-gradient(90deg, #5680c1, #3a5d9e);
     color: #fff;
     padding: 16px 24px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
   }
-  header h1 { margin: 0; font-size: 22px; font-weight: 900; }
-  header p { margin: 4px 0 0; font-size: 12px; opacity: 0.9; font-weight: 600; text-transform: none; }
+  header h1 { margin: 0; font-size: 22px; font-weight: 900; text-transform: uppercase; }
+  header p { margin: 4px 0 0; font-size: 12px; opacity: 0.9; font-weight: 600; }
   .container {
     display: grid;
     grid-template-columns: 380px 1fr;
@@ -56,6 +54,7 @@
     border-bottom: 2px solid #5680c1;
     padding-bottom: 6px;
     font-weight: 900;
+    text-transform: uppercase;
   }
   .form-group { margin-bottom: 12px; }
   label {
@@ -64,6 +63,7 @@
     font-weight: 800;
     margin-bottom: 4px;
     color: #555;
+    text-transform: uppercase;
     letter-spacing: 0.5px;
   }
   input[type="file"], input[type="text"], input[type="password"], select {
@@ -75,7 +75,6 @@
     font-family: 'Montserrat', sans-serif;
     font-weight: 600;
     background: #fff;
-    text-transform: uppercase;
   }
   button {
     background: #5680c1;
@@ -89,13 +88,10 @@
     margin: 4px 4px 4px 0;
     font-family: 'Montserrat', sans-serif;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
   }
   button:hover { background: #3a5d9e; }
   button.success { background: #28a745; }
   button.success:hover { background: #1e7e34; }
-  button.warning { background: #f89a1c; }
-  button.danger { background: #ed1e24; }
   button:disabled { background: #ccc; cursor: not-allowed; }
   .preview-area {
     display: flex;
@@ -111,12 +107,9 @@
     background: #fff;
   }
   .status {
-    padding: 8px 12px;
-    border-radius: 6px;
-    font-size: 12px;
-    margin-top: 10px;
-    display: none;
-    font-weight: 700;
+    padding: 8px 12px; border-radius: 6px;
+    font-size: 12px; margin-top: 10px;
+    display: none; font-weight: 700;
   }
   .status.info { background: #e3f2fd; color: #1565c0; display: block; }
   .status.success { background: #e8f5e9; color: #2e7d32; display: block; }
@@ -127,8 +120,7 @@
   }
   .progress-bar { height: 100%; background: #5680c1; width: 0; transition: width 0.2s; }
   .validation-view {
-    min-height: 100vh;
-    display: flex; flex-direction: column;
+    min-height: 100vh; display: flex; flex-direction: column;
     align-items: center; justify-content: center;
     padding: 20px; background: #f0f2f5;
   }
@@ -137,7 +129,7 @@
     border-radius: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.2);
   }
   .v-header { text-align: center; margin-bottom: 16px; }
-  .v-header h1 { margin: 0; color: #3a5d9e; font-weight: 900; }
+  .v-header h1 { margin: 0; color: #3a5d9e; font-weight: 900; text-transform: uppercase; }
   .v-header .timestamp { font-size: 12px; color: #555; margin-top: 6px; font-weight: 600; }
   .hidden { display: none !important; }
   .info-row { font-size: 11px; color: #666; margin-top: 6px; font-weight: 700; }
@@ -168,18 +160,16 @@
 <div id="generatorView">
   <header>
     <h1>🎫 GBK ID Card Generator</h1>
-    <p style="text-transform:none;">Sekretariat Negara RI - PPKGBK | Batch ID Card Generation with QR Validation</p>
+    <p>Sekretariat Negara RI - PPKGBK | Batch ID Card Generation with QR Validation</p>
   </header>
 
   <div class="container">
-    <!-- Control Panel -->
     <div class="panel">
       <div class="tabs">
         <div class="tab active" data-tab="seed">Seed Database</div>
         <div class="tab" data-tab="manual">Manual Input 🔒</div>
       </div>
 
-      <!-- SEED TAB -->
       <div id="tabSeed">
         <h2>1. Data & Photo</h2>
         <div class="form-group">
@@ -187,16 +177,14 @@
           <input type="file" id="csvUpload" accept=".csv" />
         </div>
         <div class="form-group">
-          <label>Person Photo (any aspect ratio)</label>
+          <label>Person Photo</label>
           <input type="file" id="photoUpload" accept="image/*" />
         </div>
 
         <h2 style="margin-top:18px;">2. Select Entry</h2>
         <div class="form-group">
           <label>Team Category (filter)</label>
-          <select id="teamFilter">
-            <option value="">-- All Teams --</option>
-          </select>
+          <select id="teamFilter"><option value="">-- All Teams --</option></select>
         </div>
         <div class="form-group">
           <label>Person (from CSV)</label>
@@ -220,7 +208,6 @@
         </div>
       </div>
 
-      <!-- MANUAL TAB -->
       <div id="tabManual" class="hidden">
         <div id="manualLocked" class="locked-overlay">
           <p>🔒 This feature is locked. Enter password to continue.</p>
@@ -234,8 +221,8 @@
             <input type="text" id="manualName" placeholder="John Doe"/>
           </div>
           <div class="form-group">
-            <label>ID Number (e.g., A123)</label>
-            <input type="text" id="manualId" placeholder="A123"/>
+            <label>ID Number (e.g., 123)</label>
+            <input type="text" id="manualId" placeholder="123"/>
           </div>
           <div class="form-group">
             <label>Team</label>
@@ -278,7 +265,6 @@
       <div class="info-row">Total entries: <span id="entryCount">0</span></div>
     </div>
 
-    <!-- Preview Panel -->
     <div class="panel preview-area">
       <h2 style="align-self:flex-start;">Live Preview</h2>
       <canvas id="cardCanvas" width="1063" height="1535"></canvas>
@@ -298,12 +284,7 @@
 
 <script>
 /* =============================================================
-   GBK ID CARD GENERATOR - v3
-   - Montserrat font, bold uppercase
-   - Restricted teams privacy mask
-   - Manual entry locked by password
-   - 3-month validity
-   - Dual-mode QR validation
+   GBK ID CARD GENERATOR - Stable Build
    ============================================================= */
 
 const TEAM_COLORS = {
@@ -330,14 +311,14 @@ const MANUAL_PASSWORD = "gbkmantapjaya";
 let csvData = [];
 let photoImg = null;
 let manualUnlocked = false;
-let currentMode = 'seed'; // seed | manual
 let manualData = null;
 let gbkLogoImg = null;
 let kemensetnegLogoImg = null;
+let fontsReady = false;
 
-/* Full default 301 entries embedded inline */
+/* ---------- 301 ENTRIES SEED ---------- */
 const DEFAULT_CSV = `No,Name,Unit Kerja,Team Classifed
-A001,Rakhmadi A. Kusumo,PPKGBK,Transisi Internal
+001,Rakhmadi A. Kusumo,PPKGBK,Transisi Internal
 002,Hendry Arisandi,PPKGBK,Transisi Internal
 003,M. Rofik Anwar,PPKGBK,Transisi Internal
 004,Hadi Sulistia,PPKGBK,Transisi Internal
@@ -437,7 +418,7 @@ A001,Rakhmadi A. Kusumo,PPKGBK,Transisi Internal
 098,Khilman Khakiki,Bidang Operasional PPKGBK,Transisi Internal
 099,Syahrul Romadhon,Bidang Operasional PPKGBK,Transisi Internal
 100,Abdal Hiyariijal,"Bidang Pengamanan, SDM, dan Umum PPKGBK",Transisi Internal
-101,Rizki Rifaldi,"Bidang Pengamanan, SDM, dan Umum PPKGBK",Transisi Internal
+101,Rizki Rifaldi 2,"Bidang Pengamanan, SDM, dan Umum PPKGBK",Transisi Internal
 102,Syahrul Munir,"Bidang Pengamanan, SDM, dan Umum PPKGBK",Transisi Internal
 103,Dedi Sumedi,"Bidang Pengamanan, SDM, dan Umum PPKGBK",Transisi Internal
 104,Iming Saputra,"Bidang Pengamanan, SDM, dan Umum PPKGBK",Transisi Internal
@@ -639,44 +620,46 @@ A001,Rakhmadi A. Kusumo,PPKGBK,Transisi Internal
 300,MAWARDI,PT ISS Indonesia,Transisi Internal
 301,HAIRUDIN,PT ISS Indonesia,Transisi Internal`;
 
-/* ---------- INLINE SVG LOGOS (matching provided assets) ---------- */
-const GBK_LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 160">
-  <text x="240" y="138" text-anchor="middle" font-family="Arial Black, Arial Black, Arial, sans-serif" font-weight="900" font-size="180" fill="#d8232a" letter-spacing="-8">GBK</text>
-</svg>`;
+/* ---------- INLINE SVG LOGOS ---------- */
+const GBK_LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 160"><text x="240" y="138" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="180" fill="#d8232a" letter-spacing="-8">GBK</text></svg>`;
 
-const KEMENSETNEG_LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240">
-  <ellipse cx="100" cy="100" rx="92" ry="92" fill="none" stroke="#d4b015" stroke-width="7"/>
-  <ellipse cx="100" cy="100" rx="78" ry="78" fill="none" stroke="#d4b015" stroke-width="4"/>
-  <polygon points="100,40 117,93 173,93 128,126 145,179 100,146 55,179 72,126 27,93 83,93"
-           fill="#f7c91f" stroke="#c39a00" stroke-width="2"/>
-  <text x="100" y="215" text-anchor="middle" font-family="Arial Black, Arial" font-weight="900" font-size="20" fill="#003a8c">KEMENTERIAN</text>
-  <text x="100" y="234" text-anchor="middle" font-family="Arial Black, Arial" font-weight="900" font-size="16" fill="#003a8c">SEKRETARIAT NEGARA</text>
-</svg>`;
+const KEMENSETNEG_LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240"><ellipse cx="100" cy="100" rx="92" ry="92" fill="none" stroke="#d4b015" stroke-width="7"/><ellipse cx="100" cy="100" rx="78" ry="78" fill="none" stroke="#d4b015" stroke-width="4"/><polygon points="100,40 117,93 173,93 128,126 145,179 100,146 55,179 72,126 27,93 83,93" fill="#f7c91f" stroke="#c39a00" stroke-width="2"/><text x="100" y="215" text-anchor="middle" font-family="Arial Black, Arial" font-weight="900" font-size="20" fill="#003a8c">KEMENTERIAN</text><text x="100" y="234" text-anchor="middle" font-family="Arial Black, Arial" font-weight="900" font-size="16" fill="#003a8c">SEKRETARIAT NEGARA</text></svg>`;
 
 function svgToImage(svg) {
   return new Promise(resolve => {
-    const blob = new Blob([svg], { type: 'image/svg+xml' });
+    const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const img = new Image();
     img.onload = () => resolve(img);
-    img.onerror = () => resolve(null);
+    img.onerror = () => { console.warn('SVG load failed'); resolve(null); };
     img.src = url;
   });
 }
 
 /* ---------- INIT ---------- */
 window.addEventListener('DOMContentLoaded', async () => {
-  // wait for fonts
+  console.log('[GBK] DOM loaded');
+
+  // Load logos first
+  try {
+    gbkLogoImg = await svgToImage(GBK_LOGO_SVG);
+    kemensetnegLogoImg = await svgToImage(KEMENSETNEG_LOGO_SVG);
+    console.log('[GBK] Logos loaded');
+  } catch(e) { console.error('Logo load error', e); }
+
+  // Wait for fonts (best effort)
   if (document.fonts) {
-    try { await document.fonts.load('900 64px Montserrat'); } catch(e) {}
-    try { await document.fonts.ready; } catch(e) {}
+    try {
+      await document.fonts.load('900 64px Montserrat');
+      await document.fonts.load('700 32px Montserrat');
+      await document.fonts.ready;
+      fontsReady = true;
+      console.log('[GBK] Fonts ready');
+    } catch(e) { console.warn('Font load warning', e); }
   }
 
-  gbkLogoImg = await svgToImage(GBK_LOGO_SVG);
-  kemensetnegLogoImg = await svgToImage(KEMENSETNEG_LOGO_SVG);
-
   const params = new URLSearchParams(window.location.search);
-  if (params.get('mode') === 'verify' || params.has('validate')) {
+  if (params.get('mode') === 'verify' || params.has('validate') || params.has('id')) {
     runValidationView(params.get('validate') || params.get('id'));
   } else {
     initGenerator();
@@ -684,9 +667,10 @@ window.addEventListener('DOMContentLoaded', async () => {
 });
 
 function initGenerator() {
-  const stored = localStorage.getItem('gbk_csv');
-  if (stored) parseCsvText(stored);
-  else { parseCsvText(DEFAULT_CSV); localStorage.setItem('gbk_csv', DEFAULT_CSV); }
+  // Always start with default seed (force refresh)
+  parseCsvText(DEFAULT_CSV);
+  localStorage.setItem('gbk_csv', DEFAULT_CSV);
+  console.log('[GBK] Loaded', csvData.length, 'entries');
 
   document.getElementById('csvUpload').addEventListener('change', handleCsvUpload);
   document.getElementById('photoUpload').addEventListener('change', handlePhotoUpload);
@@ -696,23 +680,20 @@ function initGenerator() {
   document.getElementById('titleInput').addEventListener('input', renderPreview);
   document.getElementById('manualPhoto').addEventListener('change', handleManualPhoto);
 
-  // Tab switching
   document.querySelectorAll('.tab').forEach(t => {
     t.addEventListener('click', () => {
       document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
       t.classList.add('active');
-      currentMode = t.dataset.tab;
-      document.getElementById('tabSeed').classList.toggle('hidden', currentMode !== 'seed');
-      document.getElementById('tabManual').classList.toggle('hidden', currentMode !== 'manual');
-      renderPreview();
+      const mode = t.dataset.tab;
+      document.getElementById('tabSeed').classList.toggle('hidden', mode !== 'seed');
+      document.getElementById('tabManual').classList.toggle('hidden', mode !== 'manual');
     });
   });
 
   renderPreview();
 }
 
-/* ---------- DATE UTILS ---------- */
-function getIssueDate() { return new Date(); }
+/* ---------- DATE ---------- */
 function getExpirationDate() {
   const d = new Date();
   d.setMonth(d.getMonth() + 3);
@@ -755,11 +736,13 @@ function parseCsvText(text) {
 
   populateTeamFilter();
   populatePersonSelect();
-  document.getElementById('entryCount').textContent = csvData.length;
+  const cnt = document.getElementById('entryCount');
+  if (cnt) cnt.textContent = csvData.length;
 }
 
 function populateTeamFilter() {
   const sel = document.getElementById('teamFilter');
+  if (!sel) return;
   const teams = [...new Set(csvData.map(r => r.team))];
   sel.innerHTML = '<option value="">-- All Teams --</option>';
   teams.forEach(t => {
@@ -770,8 +753,9 @@ function populateTeamFilter() {
 }
 
 function populatePersonSelect() {
-  const filter = document.getElementById('teamFilter').value;
   const sel = document.getElementById('personSelect');
+  if (!sel) return;
+  const filter = document.getElementById('teamFilter')?.value || '';
   sel.innerHTML = '<option value="">-- Select --</option>';
   csvData.forEach((row, i) => {
     if (filter && row.team !== filter) return;
@@ -809,7 +793,7 @@ function handleManualPhoto(e) {
   reader.readAsDataURL(file);
 }
 
-/* ---------- MANUAL ENTRY ---------- */
+/* ---------- MANUAL ---------- */
 function unlockManual() {
   const pw = document.getElementById('manualPassword').value;
   if (pw === MANUAL_PASSWORD) {
@@ -827,36 +811,37 @@ function addManualEntry() {
   const id = document.getElementById('manualId').value.trim();
   const team = document.getElementById('manualTeam').value;
   const unit = document.getElementById('manualUnit').value.trim();
-  const title = document.getElementById('manualTitle').value.trim();
   if (!name || !id) { showStatus('Name and ID required.', 'error'); return; }
 
-  manualData = { id, name, unit, team, title };
-  // Persist to seed so QR validation can find it
+  manualData = { id, name, unit, team };
   csvData.push({ no: id, name, unit, team });
   localStorage.setItem('gbk_csv', toCSV(csvData));
   populatePersonSelect();
-  showStatus('Manual entry added & seeded.', 'success');
+  // Select the new entry
+  const sel = document.getElementById('personSelect');
+  sel.value = csvData.length - 1;
+  document.getElementById('teamSelect').value = team;
+  showStatus('Manual entry added.', 'success');
   renderPreview();
 }
 
 function toCSV(rows) {
   const header = 'No,Name,Unit Kerja,Team Classifed';
   const body = rows.map(r => {
-    const esc = (v) => (v||'').includes(',') ? `"${v}"` : (v||'');
+    const esc = (v) => ((v||'')+'').includes(',') ? `"${v}"` : (v||'');
     return [esc(r.no), esc(r.name), esc(r.unit), esc(r.team)].join(',');
   }).join('\n');
   return header + '\n' + body;
 }
 
-/* ---------- ID NUMBER (locked to CSV seed) ---------- */
+/* ---------- ID ---------- */
 function getDisplayId(row, teamOverride) {
   const team = teamOverride || row.team || 'Transisi Internal';
   const prefix = TEAM_PREFIX[team] || 'A';
-  let no = row.no || '';
-  if (/^[A-Z]/.test(no)) no = no.substring(1);
+  let no = (row.no || '').toString();
+  if (/^[A-Z]/i.test(no)) no = no.substring(1);
   return prefix + no;
 }
-
 function splitId(id) {
   const m = id.match(/^([A-Z])(.*)$/);
   if (m) return { prefix: m[1], number: m[2] };
@@ -866,20 +851,22 @@ function splitId(id) {
 /* ---------- QR ---------- */
 function generateQRDataURL(payload, size=300) {
   return new Promise((resolve) => {
-    const tempDiv = document.createElement('div');
-    tempDiv.style.position = 'absolute';
-    tempDiv.style.left = '-9999px';
-    document.body.appendChild(tempDiv);
-    new QRCode(tempDiv, {
-      text: payload, width: size, height: size,
-      correctLevel: QRCode.CorrectLevel.H
-    });
-    setTimeout(() => {
-      const cv = tempDiv.querySelector('canvas');
-      const dataUrl = cv ? cv.toDataURL() : '';
-      document.body.removeChild(tempDiv);
-      resolve(dataUrl);
-    }, 80);
+    try {
+      const tempDiv = document.createElement('div');
+      tempDiv.style.position = 'absolute';
+      tempDiv.style.left = '-9999px';
+      document.body.appendChild(tempDiv);
+      new QRCode(tempDiv, {
+        text: payload, width: size, height: size,
+        correctLevel: QRCode.CorrectLevel.M
+      });
+      setTimeout(() => {
+        const cv = tempDiv.querySelector('canvas');
+        const dataUrl = cv ? cv.toDataURL() : '';
+        document.body.removeChild(tempDiv);
+        resolve(dataUrl);
+      }, 100);
+    } catch(e) { console.error('QR error', e); resolve(''); }
   });
 }
 
@@ -899,25 +886,28 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
-/* ---------- CARD RENDERING ---------- */
+/* ---------- CARD RENDER ---------- */
 async function renderCard(canvas, data, options={}) {
   const ctx = canvas.getContext('2d');
   const W = canvas.width, H = canvas.height;
   const team = data.team || 'Transisi Internal';
   const bgColor = TEAM_COLORS[team] || '#5680c1';
   const isRestricted = RESTRICTED_TEAMS.includes(team);
+  const FONT = "'Montserrat', 'Arial Black', Arial, sans-serif";
 
-  // White background
+  // Clear & background
+  ctx.clearRect(0,0,W,H);
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0,0,W,H);
 
-  // Card body with rounded corners + colored fill
+  // Rounded body with team color
   ctx.save();
   roundRect(ctx, 0, 0, W, H, 40);
   ctx.clip();
   ctx.fillStyle = bgColor;
   ctx.fillRect(0,0,W,H);
 
-  // Subtle vertical pattern
-  ctx.globalAlpha = 0.08;
+  // Subtle pattern lines
+  ctx.globalAlpha = 0.06;
   ctx.strokeStyle = '#ffffff';
+  ctx.lineW
