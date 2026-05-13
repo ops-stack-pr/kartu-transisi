@@ -5,12 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>GBK ID Card Generator</title>
 
-<!-- Montserrat Font -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 
-<!-- Libraries -->
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -19,144 +17,45 @@
 
 <style>
   * { box-sizing: border-box; }
-  body {
-    font-family: 'Montserrat', Arial, sans-serif;
-    margin: 0;
-    background: #f0f2f5;
-    color: #222;
-    font-weight: 700;
-  }
-  header {
-    background: linear-gradient(90deg, #5680c1, #3a5d9e);
-    color: #fff;
-    padding: 16px 24px;
-  }
+  body { font-family: 'Montserrat', Arial, sans-serif; margin: 0; background: #f0f2f5; color: #222; font-weight: 700; }
+  header { background: linear-gradient(90deg, #5680c1, #3a5d9e); color: #fff; padding: 16px 24px; }
   header h1 { margin: 0; font-size: 22px; font-weight: 900; text-transform: uppercase; }
   header p { margin: 4px 0 0; font-size: 12px; opacity: 0.9; font-weight: 600; }
-  .container {
-    display: grid;
-    grid-template-columns: 380px 1fr;
-    gap: 20px;
-    padding: 20px;
-    max-width: 1600px;
-    margin: 0 auto;
-  }
-  .panel {
-    background: #fff;
-    border-radius: 10px;
-    padding: 18px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-  }
-  .panel h2 {
-    margin: 0 0 12px;
-    font-size: 14px;
-    color: #3a5d9e;
-    border-bottom: 2px solid #5680c1;
-    padding-bottom: 6px;
-    font-weight: 900;
-    text-transform: uppercase;
-  }
+  .container { display: grid; grid-template-columns: 380px 1fr; gap: 20px; padding: 20px; max-width: 1600px; margin: 0 auto; }
+  .panel { background: #fff; border-radius: 10px; padding: 18px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+  .panel h2 { margin: 0 0 12px; font-size: 14px; color: #3a5d9e; border-bottom: 2px solid #5680c1; padding-bottom: 6px; font-weight: 900; text-transform: uppercase; }
   .form-group { margin-bottom: 12px; }
-  label {
-    display: block;
-    font-size: 11px;
-    font-weight: 800;
-    margin-bottom: 4px;
-    color: #555;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  input[type="file"], input[type="text"], input[type="password"], select {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 12px;
-    font-family: 'Montserrat', sans-serif;
-    font-weight: 600;
-    background: #fff;
-  }
-  button {
-    background: #5680c1;
-    color: #fff;
-    border: none;
-    padding: 9px 14px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 12px;
-    font-weight: 800;
-    margin: 4px 4px 4px 0;
-    font-family: 'Montserrat', sans-serif;
-    text-transform: uppercase;
-  }
+  label { display: block; font-size: 11px; font-weight: 800; margin-bottom: 4px; color: #555; text-transform: uppercase; letter-spacing: 0.5px; }
+  input[type="file"], input[type="text"], input[type="password"], select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 12px; font-family: 'Montserrat', sans-serif; font-weight: 600; background: #fff; }
+  button { background: #5680c1; color: #fff; border: none; padding: 9px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 800; margin: 4px 4px 4px 0; font-family: 'Montserrat', sans-serif; text-transform: uppercase; }
   button:hover { background: #3a5d9e; }
   button.success { background: #28a745; }
   button.success:hover { background: #1e7e34; }
-  button:disabled { background: #ccc; cursor: not-allowed; }
-  .preview-area {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  #cardCanvas {
-    max-width: 100%;
-    max-height: 90vh;
-    height: auto;
-    border-radius: 16px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.18);
-    background: #fff;
-  }
-  .status {
-    padding: 8px 12px; border-radius: 6px;
-    font-size: 12px; margin-top: 10px;
-    display: none; font-weight: 700;
-  }
+  .preview-area { display: flex; flex-direction: column; align-items: center; }
+  #cardCanvas { max-width: 100%; max-height: 90vh; height: auto; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.18); background: #fff; }
+  .status { padding: 8px 12px; border-radius: 6px; font-size: 12px; margin-top: 10px; display: none; font-weight: 700; }
   .status.info { background: #e3f2fd; color: #1565c0; display: block; }
   .status.success { background: #e8f5e9; color: #2e7d32; display: block; }
   .status.error { background: #ffebee; color: #c62828; display: block; }
-  .progress {
-    width: 100%; height: 8px; background: #eee;
-    border-radius: 4px; overflow: hidden; margin-top: 8px; display: none;
-  }
+  .progress { width: 100%; height: 8px; background: #eee; border-radius: 4px; overflow: hidden; margin-top: 8px; display: none; }
   .progress-bar { height: 100%; background: #5680c1; width: 0; transition: width 0.2s; }
-  .validation-view {
-    min-height: 100vh; display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    padding: 20px; background: #f0f2f5;
-  }
-  .validation-view canvas {
-    max-width: 95%; max-height: 80vh; height: auto;
-    border-radius: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.2);
-  }
+  .validation-view { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; background: #f0f2f5; }
+  .validation-view canvas { max-width: 95%; max-height: 80vh; height: auto; border-radius: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.2); }
   .v-header { text-align: center; margin-bottom: 16px; }
   .v-header h1 { margin: 0; color: #3a5d9e; font-weight: 900; text-transform: uppercase; }
   .v-header .timestamp { font-size: 12px; color: #555; margin-top: 6px; font-weight: 600; }
   .hidden { display: none !important; }
   .info-row { font-size: 11px; color: #666; margin-top: 6px; font-weight: 700; }
-  .tabs {
-    display: flex; gap: 4px; margin-bottom: 12px;
-    border-bottom: 2px solid #ddd;
-  }
-  .tab {
-    padding: 8px 14px; cursor: pointer; font-size: 12px;
-    font-weight: 800; color: #888;
-    border-bottom: 3px solid transparent; margin-bottom: -2px;
-    text-transform: uppercase;
-  }
+  .tabs { display: flex; gap: 4px; margin-bottom: 12px; border-bottom: 2px solid #ddd; }
+  .tab { padding: 8px 14px; cursor: pointer; font-size: 12px; font-weight: 800; color: #888; border-bottom: 3px solid transparent; margin-bottom: -2px; text-transform: uppercase; }
   .tab.active { color: #5680c1; border-bottom-color: #5680c1; }
-  .locked-overlay {
-    background: #fff8e1; border: 2px dashed #f89a1c;
-    border-radius: 8px; padding: 16px; text-align: center;
-  }
+  .locked-overlay { background: #fff8e1; border: 2px dashed #f89a1c; border-radius: 8px; padding: 16px; text-align: center; }
   .locked-overlay p { margin: 0 0 10px; font-size: 12px; color: #666; font-weight: 700; }
-  @media (max-width: 900px) {
-    .container { grid-template-columns: 1fr; }
-  }
+  @media (max-width: 900px) { .container { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
 
-<!-- ============ GENERATOR VIEW ============ -->
 <div id="generatorView">
   <header>
     <h1>🎫 GBK ID Card Generator</h1>
@@ -212,18 +111,12 @@
         <div id="manualLocked" class="locked-overlay">
           <p>🔒 This feature is locked. Enter password to continue.</p>
           <input type="password" id="manualPassword" placeholder="Password" />
-          <button onclick="unlockManual()" style="margin-top:8px;">Unlock</button>
+          <button id="btnUnlock" style="margin-top:8px;">Unlock</button>
         </div>
         <div id="manualForm" class="hidden">
           <h2>Manual Entry</h2>
-          <div class="form-group">
-            <label>Full Name</label>
-            <input type="text" id="manualName" placeholder="John Doe"/>
-          </div>
-          <div class="form-group">
-            <label>ID Number (e.g., 123)</label>
-            <input type="text" id="manualId" placeholder="123"/>
-          </div>
+          <div class="form-group"><label>Full Name</label><input type="text" id="manualName"/></div>
+          <div class="form-group"><label>ID Number</label><input type="text" id="manualId" placeholder="e.g., 123"/></div>
           <div class="form-group">
             <label>Team</label>
             <select id="manualTeam">
@@ -235,32 +128,20 @@
               <option value="Tamu/Tenant">Tamu/Tenant</option>
             </select>
           </div>
-          <div class="form-group">
-            <label>Unit Kerja</label>
-            <input type="text" id="manualUnit" placeholder="PPKGBK"/>
-          </div>
-          <div class="form-group">
-            <label>Photo</label>
-            <input type="file" id="manualPhoto" accept="image/*" />
-          </div>
-          <div class="form-group">
-            <label>Title</label>
-            <input type="text" id="manualTitle" value="TIM PELAKSANA EKSEKUSI BLOK 15" />
-          </div>
-          <button class="success" onclick="addManualEntry()">➕ Add & Preview</button>
+          <div class="form-group"><label>Unit Kerja</label><input type="text" id="manualUnit" placeholder="PPKGBK"/></div>
+          <div class="form-group"><label>Photo</label><input type="file" id="manualPhoto" accept="image/*" /></div>
+          <button class="success" id="btnAddManual">➕ Add & Preview</button>
         </div>
       </div>
 
       <h2 style="margin-top:18px;">3. Export</h2>
-      <button onclick="exportSingle('png')">PNG</button>
-      <button onclick="exportSingle('jpg')">JPG</button>
-      <button onclick="exportSingle('pdf')">PDF</button>
+      <button id="btnPng">PNG</button>
+      <button id="btnJpg">JPG</button>
+      <button id="btnPdf">PDF</button>
       <br/>
-      <button class="success" onclick="batchExport()">📦 Batch Export ZIP (All)</button>
+      <button class="success" id="btnBatch">📦 Batch Export ZIP (All)</button>
 
-      <div class="progress" id="progressContainer">
-        <div class="progress-bar" id="progressBar"></div>
-      </div>
+      <div class="progress" id="progressContainer"><div class="progress-bar" id="progressBar"></div></div>
       <div class="status" id="statusMsg"></div>
       <div class="info-row">Total entries: <span id="entryCount">0</span></div>
     </div>
@@ -272,7 +153,6 @@
   </div>
 </div>
 
-<!-- ============ VALIDATION VIEW ============ -->
 <div id="validationView" class="validation-view hidden">
   <div class="v-header">
     <h1>🔐 ID Card Validation</h1>
@@ -283,9 +163,9 @@
 </div>
 
 <script>
-/* =============================================================
-   GBK ID CARD GENERATOR - Stable Build
-   ============================================================= */
+/* ============================================================
+   GBK ID CARD GENERATOR - FIXED
+   ============================================================ */
 
 const TEAM_COLORS = {
   "Transisi Internal": "#5680c1",
@@ -304,325 +184,319 @@ const TEAM_PREFIX = {
   "Tamu/Tenant": "F"
 };
 const RESTRICTED_TEAMS = ["Keamanan","Kebersihan","Media","Tamu/Tenant"];
-const CARD_W = 1063;
-const CARD_H = 1535;
 const MANUAL_PASSWORD = "gbkmantapjaya";
 
 let csvData = [];
 let photoImg = null;
-let manualUnlocked = false;
-let manualData = null;
 let gbkLogoImg = null;
 let kemensetnegLogoImg = null;
-let fontsReady = false;
 
-/* ---------- 301 ENTRIES SEED ---------- */
-const DEFAULT_CSV = `No,Name,Unit Kerja,Team Classifed
-001,Rakhmadi A. Kusumo,PPKGBK,Transisi Internal
-002,Hendry Arisandi,PPKGBK,Transisi Internal
-003,M. Rofik Anwar,PPKGBK,Transisi Internal
-004,Hadi Sulistia,PPKGBK,Transisi Internal
-005,Afrizal P. Hananto,PPKGBK,Transisi Internal
-006,Asep Triyadi,PPKGBK,Transisi Internal
-007,Leonardo Sipayung,PPKGBK,Transisi Internal
-008,Sri Lestari Puji Astuti,PPKGBK,Transisi Internal
-009,Jujuk Bandung Windargo,PPKGBK,Transisi Internal
-010,Hariyadi,PPKGBK,Transisi Internal
-011,David Prastyan,PPKGBK,Transisi Internal
-012,Muhammad Trinugroho W.,PPKGBK,Transisi Internal
-013,Yayu Srie Rahayu,PPKGBK,Transisi Internal
-014,Brita Setiawati,PPKGBK,Transisi Internal
-015,Mulyadi Sidik,PPKGBK,Transisi Internal
-016,Sukamto,PPKGBK,Transisi Internal
-017,Nathanael Sitepu,PPKGBK,Transisi Internal
-018,Yos Fauzi Nur Muhammad,PPKGBK,Transisi Internal
-019,Denny Lestiyana,PPKGBK,Transisi Internal
-020,Dadi Setyanto,PPKGBK,Transisi Internal
-021,Dyah Kumala Sari,PPKGBK,Transisi Internal
-022,Raymond,PPKGBK,Transisi Internal
-023,Muhammad Bram Glasmacher,PPKGBK,Transisi Internal
-024,M. Anindhita Lintang Muzacky,PPKGBK,Transisi Internal
-025,Dwi Kurniawati Pratiwi,PPKGBK,Transisi Internal
-026,Agus Sutrisno,PPKGBK,Transisi Internal
-027,Nindya Permadani,PPKGBK,Transisi Internal
-028,Anisa Prita Dewi,PPKGBK,Transisi Internal
-029,Fitria Nurhidayah,PPKGBK,Transisi Internal
-030,Dita Andriana,PPKGBK,Transisi Internal
-031,Agung Hartanto,PPKGBK,Transisi Internal
-032,Reza Satria,PPKGBK,Transisi Internal
-033,Derianto Iskandar,PPKGBK,Transisi Internal
-034,Arnold Thamrin Halomoan,PPKGBK,Transisi Internal
-035,Citra Ayu Fajri,PPKGBK,Transisi Internal
-036,Riza Putra,PPKGBK,Transisi Internal
-037,Fildza Shabrina,PPKGBK,Transisi Internal
-038,Iis Haerudin,PPKGBK,Transisi Internal
-039,Bangun Didik Susantoro,PPKGBK,Transisi Internal
-040,Reza Heriansyah,PPKGBK,Transisi Internal
-041,Ahmad Sya'roni,PPKGBK,Transisi Internal
-042,Ary Dermawan,PPKGBK,Transisi Internal
-043,Yozi Abrar,PPKGBK,Transisi Internal
-044,Retno Ray Ulfa,PPKGBK,Transisi Internal
-045,Sri Ratna Dian Purnami,PPKGBK,Transisi Internal
-046,Sugeng Supriyanto,PPKGBK,Transisi Internal
-047,Hendra Syahrizal,PPKGBK,Transisi Internal
-048,Aprilia Ayu Permatasari,PPKGBK,Transisi Internal
-049,Reza Irdiansyah,PPKGBK,Transisi Internal
-050,Tri Novita Sari,PPKGBK,Transisi Internal
-051,Doddy Febrianto,PPKGBK,Transisi Internal
-052,Devi Riana Eka Anggrainingrum,PPKGBK,Transisi Internal
-053,M. Satria Fikri,PPKGBK,Transisi Internal
-054,Ahmad Yasfin,PPKGBK,Transisi Internal
-055,Ervisa Mahditiara,PPKGBK,Transisi Internal
-056,Ade Ardiansyah,PPKGBK,Transisi Internal
-057,Mufti Rizal,PPKGBK,Transisi Internal
-058,Musofa,PPKGBK,Transisi Internal
-059,Tommy Hartanto,PPKGBK,Transisi Internal
-060,Hadi Nurhidayat,PPKGBK,Transisi Internal
-061,Ivan Dwicahyo Pratomo,PPKGBK,Transisi Internal
-062,Agus Salim,PPKGBK,Transisi Internal
-063,Bondan Irawan,PPKGBK,Transisi Internal
-064,Christoffel Panjaitan,PPKGBK,Transisi Internal
-065,Glory Leonard,PPKGBK,Transisi Internal
-066,Gatot Dwi Satryo,PPKGBK,Transisi Internal
-067,Yogo Nugraha,PPKGBK,Transisi Internal
-068,Gilang Dhanu Pamungkas,PPKGBK,Transisi Internal
-069,Bimo Ario Seto,PPKGBK,Transisi Internal
-070,Dwiki Dafitra Suratno,PPKGBK,Transisi Internal
-071,Aruna Irani,Bidang Aset PPKGBK,Transisi Internal
-072,Rachmat Dwi Ryanda,Bidang Aset PPKGBK,Transisi Internal
-073,Rizki Rifaldi,Bidang Aset PPKGBK,Transisi Internal
-074,Sukma Irawan,Bidang Aset PPKGBK,Transisi Internal
-075,Galuh Sukmaningrum,Bidang Aset PPKGBK,Transisi Internal
-076,Elvina Susanti Sihombing,Bidang Aset PPKGBK,Transisi Internal
-077,Meri Putri Sugianto,Bidang Aset PPKGBK,Transisi Internal
-078,Nadhira Danessa Mongdong,Bidang Aset PPKGBK,Transisi Internal
-079,Kartika Putri Nur Fitriana,Bidang Aset PPKGBK,Transisi Internal
-080,Amelia Surya Ningsih,Bidang Aset PPKGBK,Transisi Internal
-081,Rama Suwardika,Bidang Hukum dan Kehumasan PPKGBK,Transisi Internal
-082,Agung Budi Wicaksono,Bidang Hukum dan Kehumasan PPKGBK,Transisi Internal
-083,NurAziera,Bidang Hukum dan Kehumasan PPKGBK,Transisi Internal
-084,Mafathilul Fahmi,Bidang Hukum dan Kehumasan PPKGBK,Transisi Internal
-085,Noer Harisman,Bidang Hukum dan Kehumasan PPKGBK,Transisi Internal
-086,Riesca I,Bidang Hukum dan Kehumasan PPKGBK,Transisi Internal
-087,Farah Alifia,Bidang Hukum dan Kehumasan PPKGBK,Transisi Internal
-088,Ganda Syahputra,Bidang Hukum dan Kehumasan PPKGBK,Transisi Internal
-089,Hashifah Nabilah,Bidang Keuangan PPKGBK,Transisi Internal
-090,Muhammad Abdillah Syakur,Bidang Keuangan PPKGBK,Transisi Internal
-091,Aghnal Yusri,Bidang Keuangan PPKGBK,Transisi Internal
-092,Retnowati,Bidang Keuangan PPKGBK,Transisi Internal
-093,Siti Aminah Candra Kasih,Bidang Keuangan PPKGBK,Transisi Internal
-094,Dwi Kurniawati,Bidang Keuangan PPKGBK,Transisi Internal
-095,Audia Cendekiawati,Bidang Transisi Event dan Pelanggan PPKGBK,Transisi Internal
-096,Azhadhita Aprilia,Bidang Transisi Event dan Pelanggan PPKGBK,Transisi Internal
-097,Linda Sri Mulyati,Bidang Operasional PPKGBK,Transisi Internal
-098,Khilman Khakiki,Bidang Operasional PPKGBK,Transisi Internal
-099,Syahrul Romadhon,Bidang Operasional PPKGBK,Transisi Internal
-100,Abdal Hiyariijal,"Bidang Pengamanan, SDM, dan Umum PPKGBK",Transisi Internal
-101,Rizki Rifaldi 2,"Bidang Pengamanan, SDM, dan Umum PPKGBK",Transisi Internal
-102,Syahrul Munir,"Bidang Pengamanan, SDM, dan Umum PPKGBK",Transisi Internal
-103,Dedi Sumedi,"Bidang Pengamanan, SDM, dan Umum PPKGBK",Transisi Internal
-104,Iming Saputra,"Bidang Pengamanan, SDM, dan Umum PPKGBK",Transisi Internal
-105,Aris Suyono,"Bidang Pengamanan, SDM, dan Umum PPKGBK",Transisi Internal
-106,Saepul Nurdin,"Bidang Pengamanan, SDM, dan Umum PPKGBK",Transisi Internal
-107,Agung Widhi Yulianto,"Bidang Pengamanan, SDM, dan Umum PPKGBK",Transisi Internal
-108,Anris Patiar,"Bidang Pengamanan, SDM, dan Umum PPKGBK",Transisi Internal
-109,Aris Haidir,"Bidang Pengamanan, SDM, dan Umum PPKGBK",Transisi Internal
-110,Nur Ahadi,"Bidang Pengamanan, SDM, dan Umum PPKGBK",Transisi Internal
-111,Baso Patatori,"Bidang Pengamanan, SDM, dan Umum PPKGBK",Transisi Internal
-112,Persanto Haryono,"Bidang Pengamanan, SDM, dan Umum PPKGBK",Transisi Internal
-113,Renaldi Alamsyah,"Bidang Teknis, Pemeliharaan dan IT PPKGBK",Transisi Internal
-114,Agus Saputra,"Bidang Teknis, Pemeliharaan dan IT PPKGBK",Transisi Internal
-115,Warto,"Bidang Teknis, Pemeliharaan dan IT PPKGBK",Transisi Internal
-116,Restu Winangkit,"Bidang Teknis, Pemeliharaan dan IT PPKGBK",Transisi Internal
-117,Suryaman,"Bidang Teknis, Pemeliharaan dan IT PPKGBK",Transisi Internal
-118,Harmono,"Bidang Teknis, Pemeliharaan dan IT PPKGBK",Transisi Internal
-119,Putra Anugrah,"Bidang Teknis, Pemeliharaan dan IT PPKGBK",Transisi Internal
-120,Muhammad Rizki,"Bidang Teknis, Pemeliharaan dan IT PPKGBK",Transisi Internal
-121,Dicky Uzazi Rengga Saputra,"Bidang Teknis, Pemeliharaan dan IT PPKGBK",Transisi Internal
-122,Rid Syaiful Bachri,"Bidang Teknis, Pemeliharaan dan IT PPKGBK",Transisi Internal
-123,Kardeni,"Bidang Teknis, Pemeliharaan dan IT PPKGBK",Transisi Internal
-124,Rahmat,"Bidang Teknis, Pemeliharaan dan IT PPKGBK",Transisi Internal
-125,Akhmad Wahyudi,"Bidang Teknis, Pemeliharaan dan IT PPKGBK",Transisi Internal
-126,Eko Pujiono,"Bidang Teknis, Pemeliharaan dan IT PPKGBK",Transisi Internal
-127,Nur Fajri,"Bidang Teknis, Pemeliharaan dan IT PPKGBK",Transisi Internal
-128,Muhamad Sofiulloh,"Bidang Teknis, Pemeliharaan dan IT PPKGBK",Transisi Internal
-129,Rizki Prasetyo,"Bidang Teknis, Pemeliharaan dan IT PPKGBK",Transisi Internal
-130,Djen Rinanto,"Bidang Teknis, Pemeliharaan dan IT PPKGBK",Transisi Internal
-131,Muhamad Hadinoor Gorbachev,"Bidang Teknis, Pemeliharaan dan IT PPKGBK",Transisi Internal
-132,Widi Megantoro,Kementerian Sekretariat Negara,Transisi Internal
-133,Nur Salam Boni,Kementerian Sekretariat Negara,Transisi Internal
-134,Dina Amalia Puspa,Kementerian Sekretariat Negara,Transisi Internal
-135,Yulistian,Kementerian Sekretariat Negara,Transisi Internal
-136,Abdan Faturohman,Kementerian Sekretariat Negara,Transisi Internal
-137,Nimas Pangestika Dewi,Kementerian Sekretariat Negara,Transisi Internal
-138,Dahono Pamungkas,Kementerian Sekretariat Negara,Transisi Internal
-139,Immanuel Martiandos,Kementerian Sekretariat Negara,Transisi Internal
-140,Alma Dewi Ananda,Kementerian Sekretariat Negara,Transisi Internal
-141,Dimas Yogi Febriansyah,Kementerian Sekretariat Negara,Transisi Internal
-142,Ruhiyat,Kementerian Sekretariat Negara,Transisi Internal
-143,Galang Pudya S,Kementerian Sekretariat Negara,Transisi Internal
-144,Zulfikar,Kementerian Sekretariat Negara,Transisi Internal
-145,Hotlan Parlindungan Siallagan,Kementerian Sekretariat Negara,Transisi Internal
-146,R A Marissa Kartika Anthrasita,Kementerian Sekretariat Negara,Transisi Internal
-147,Dede Sudrajat,Kementerian Sekretariat Negara,Transisi Internal
-148,Diesta Arum Pramesti,Kementerian Sekretariat Negara,Transisi Internal
-149,Tety Andriani,Kementerian Sekretariat Negara,Transisi Internal
-150,Herqutanto,Kementerian Sekretariat Negara,Transisi Internal
-151,Murniasih,Kementerian Sekretariat Negara,Transisi Internal
-152,Riawan Agung Hartoyo,Kementerian Sekretariat Negara,Transisi Internal
-153,Abdul Tolib,Kementerian Sekretariat Negara,Transisi Internal
-154,Yuliyan Sutrisna,Kementerian Sekretariat Negara,Transisi Internal
-155,Agus Wahyudi,Kementerian Sekretariat Negara,Transisi Internal
-156,Fifik Ali Perdana,Kementerian Sekretariat Negara,Transisi Internal
-157,Muhamad Yudi,Kementerian Sekretariat Negara,Transisi Internal
-158,Wike Rina Asyari,Kementerian Sekretariat Negara,Transisi Internal
-159,Parngoluan Situmorang,Kementerian Sekretariat Negara,Transisi Internal
-160,Saddam Firgiawan,Kementerian Sekretariat Negara,Transisi Internal
-161,Arsyi Triraharja,Kementerian Sekretariat Negara,Transisi Internal
-162,Aldi Hafeirda Putra,Kementerian Sekretariat Negara,Transisi Internal
-163,Wijoyo Hartono,Kementerian Sekretariat Negara,Transisi Internal
-164,Okky Catur Hatmojo,Kementerian Sekretariat Negara,Transisi Internal
-165,Andang Aprilianto,Kementerian Sekretariat Negara,Transisi Internal
-166,Dhede Aulia Ramadhan,Kementerian Sekretariat Negara,Transisi Internal
-167,Suharyono,Kementerian Sekretariat Negara,Transisi Internal
-168,Iman Aji Sasmito,Kementerian Sekretariat Negara,Transisi Internal
-169,Alphadio Doni Saputra,Kementerian Sekretariat Negara,Transisi Internal
-170,Widodo,Kementerian Sekretariat Negara,Transisi Internal
-171,Iwan Herniadi,Kementerian Sekretariat Negara,Transisi Internal
-172,Aditya Darmawan,Kementerian Sekretariat Negara,Transisi Internal
-173,Emir Fakhriza Purba,Kementerian Sekretariat Negara,Transisi Internal
-174,Tri Agus Saputro,Kementerian Sekretariat Negara,Transisi Internal
-175,Bambang Suprapto,Kementerian Sekretariat Negara,Transisi Internal
-176,Rusli,Kementerian Sekretariat Negara,Transisi Internal
-177,Dede Mulyadi,Kementerian Sekretariat Negara,Transisi Internal
-178,Ahmad Husin,Kementerian Sekretariat Negara,Transisi Internal
-179,R. Ahmad Idham,Kementerian Sekretariat Negara,Transisi Internal
-180,Dadan Eka Banda R,Kementerian Sekretariat Negara,Transisi Internal
-181,Nurlaila Fitriyani,Kementerian Sekretariat Negara,Transisi Internal
-182,Drajat Jiwandono,Kementerian Sekretariat Negara,Transisi Internal
-183,Agung Suslityo Utomo,Kementerian Sekretariat Negara,Transisi Internal
-184,Fuad Setiawan,Kementerian Sekretariat Negara,Transisi Internal
-185,Leni Marlina,Kementerian Sekretariat Negara,Transisi Internal
-186,Tursina,Kementerian Sekretariat Negara,Transisi Internal
-187,Hermawan,Kementerian Sekretariat Negara,Transisi Internal
-188,Devi Eriana Safira,Kementerian Sekretariat Negara,Transisi Internal
-189,Ridho Weedy Rachmanda,Kementerian Sekretariat Negara,Transisi Internal
-190,Tri Ana Gita Nursela,Kementerian Sekretariat Negara,Transisi Internal
-191,Roofiana Irawan,Kementerian Sekretariat Negara,Transisi Internal
-192,Muhamad Yusuf,Kementerian Sekretariat Negara,Transisi Internal
-193,Fathullah,Kementerian Sekretariat Negara,Transisi Internal
-194,Asep Suryana,Kementerian Sekretariat Negara,Transisi Internal
-195,Iwan Safarudin,Kementerian Sekretariat Negara,Transisi Internal
-196,Yusuf Fakhri Allaam,Kementerian Sekretariat Negara,Transisi Internal
-197,Singgih Aziz,Kementerian Sekretariat Negara,Transisi Internal
-198,Liberti Maranata Sitepu,Kementerian Sekretariat Negara,Transisi Internal
-199,Farid Muhajir,Kementerian Sekretariat Negara,Transisi Internal
-200,Herman,Kementerian Sekretariat Negara,Transisi Internal
-201,Aries Cahyadi,Kementerian Sekretariat Negara,Transisi Internal
-202,ANDRES AZHARI,PT ISS Indonesia,Transisi Internal
-203,Muslim,PT ISS Indonesia,Transisi Internal
-204,Shelly Fathilah,PT ISS Indonesia,Transisi Internal
-205,BAYU PERMANA,PT ISS Indonesia,Transisi Internal
-206,Reza Nasution,PT ISS Indonesia,Transisi Internal
-207,Attoyyibah Nurlatifah,PT ISS Indonesia,Transisi Internal
-208,Romi Saputra,PT ISS Indonesia,Transisi Internal
-209,NURJAYA,PT ISS Indonesia,Transisi Internal
-210,Den Wilden Hotibul Umam,PT ISS Indonesia,Transisi Internal
-211,HAMJAH ARIP MUNANDAR,PT ISS Indonesia,Transisi Internal
-212,MUHAMMAD RESEKI ROMADHAN,PT ISS Indonesia,Transisi Internal
-213,YAYANG RAMADHAN,PT ISS Indonesia,Transisi Internal
-214,Ikbal Saputra,PT ISS Indonesia,Transisi Internal
-215,HERDIKA SETIADI,PT ISS Indonesia,Transisi Internal
-216,RIZAL GUSTOMI,PT ISS Indonesia,Transisi Internal
-217,Deri Santoso,PT ISS Indonesia,Transisi Internal
-218,REZA FAISAL,PT ISS Indonesia,Transisi Internal
-219,ILHAM HUDORI,PT ISS Indonesia,Transisi Internal
-220,Muhammad Farist Novianto,PT ISS Indonesia,Transisi Internal
-221,DIKA ANGGARA DWIJAYANTO,PT ISS Indonesia,Transisi Internal
-222,M. ZAENAL ABIDIN,PT ISS Indonesia,Transisi Internal
-223,Nurhadi Achmad Solihin,PT ISS Indonesia,Transisi Internal
-224,Alfian Tohari,PT ISS Indonesia,Transisi Internal
-225,MOHAMAD BAHRUL ULUM,PT ISS Indonesia,Transisi Internal
-226,ADIT EFA PRATAMA,PT ISS Indonesia,Transisi Internal
-227,DERI SETIAWAN,PT ISS Indonesia,Transisi Internal
-228,SUHENDRA,PT ISS Indonesia,Transisi Internal
-229,MUHAMAD ARI HIDAYAT,PT ISS Indonesia,Transisi Internal
-230,Aisyah Nur Aida,PT ISS Indonesia,Transisi Internal
-231,AYYU EPENDI,PT ISS Indonesia,Transisi Internal
-232,RANGGA ALAMSYAH,PT ISS Indonesia,Transisi Internal
-233,MAYA JULIA,PT ISS Indonesia,Transisi Internal
-234,NUR SIDIK FIRDAUS,PT ISS Indonesia,Transisi Internal
-235,FITRIYA ITA MURNIYATI,PT ISS Indonesia,Transisi Internal
-236,YAYAN SETIAWAN,PT ISS Indonesia,Transisi Internal
-237,ALWI SANJAYA,PT ISS Indonesia,Transisi Internal
-238,MIA FEBRYANTI,PT ISS Indonesia,Transisi Internal
-239,ISMAIL,PT ISS Indonesia,Transisi Internal
-240,HARIS ELFA ROBI,PT ISS Indonesia,Transisi Internal
-241,ANNISA RAHMAWATI,PT ISS Indonesia,Transisi Internal
-242,ARIFIN ILHAM,PT ISS Indonesia,Transisi Internal
-243,ALYATUL QORIAH,PT ISS Indonesia,Transisi Internal
-244,SUDIRWANTO,PT ISS Indonesia,Transisi Internal
-245,Ahmad Solihin,PT ISS Indonesia,Transisi Internal
-246,ANDRI SETIAWAN,PT ISS Indonesia,Transisi Internal
-247,KHAIRUNNAS,PT ISS Indonesia,Transisi Internal
-248,AZIZ SYIDIK MUNAWAR,PT ISS Indonesia,Transisi Internal
-249,Nur Wahid,PT ISS Indonesia,Transisi Internal
-250,AHMAD HAERUL HAFI,PT ISS Indonesia,Transisi Internal
-251,Jeni Sujana,PT ISS Indonesia,Transisi Internal
-252,KOMARUDIN,PT ISS Indonesia,Transisi Internal
-253,Andrian Ramadhani,PT ISS Indonesia,Transisi Internal
-254,Heri Heriyawan,PT ISS Indonesia,Transisi Internal
-255,Muhamad Fajrin Firdaus,PT ISS Indonesia,Transisi Internal
-256,Listianto Hanif Prasetyo,PT ISS Indonesia,Transisi Internal
-257,HENDRI ANTIS,PT ISS Indonesia,Transisi Internal
-258,Candra Pebriyana,PT ISS Indonesia,Transisi Internal
-259,Bangkit Wahyu Alamsyah,PT ISS Indonesia,Transisi Internal
-260,Muhamad Suhendi,PT ISS Indonesia,Transisi Internal
-261,Muhammad Fajri Shamsuri,PT ISS Indonesia,Transisi Internal
-262,Ujang,PT ISS Indonesia,Transisi Internal
-263,Rifyal Cahya,PT ISS Indonesia,Transisi Internal
-264,GANDA SAPUTRA,PT ISS Indonesia,Transisi Internal
-265,Sumardi,PT ISS Indonesia,Transisi Internal
-266,M. Andry Wijaya Kusuma,PT ISS Indonesia,Transisi Internal
-267,ARI RIFANDI,PT ISS Indonesia,Transisi Internal
-268,SYARIF SUPRIADI,PT ISS Indonesia,Transisi Internal
-269,Wahyudi Al Mansyah,PT ISS Indonesia,Transisi Internal
-270,Riski Aditya Prasetya,PT ISS Indonesia,Transisi Internal
-271,Agung Gumelar,PT ISS Indonesia,Transisi Internal
-272,Suhendi,PT ISS Indonesia,Transisi Internal
-273,Adam Ridwan,PT ISS Indonesia,Transisi Internal
-274,SUNINGRAT,PT ISS Indonesia,Transisi Internal
-275,LARRY BENARDO SARAGIH,PT ISS Indonesia,Transisi Internal
-276,Retno Aulia Muhammad Nur,PT ISS Indonesia,Transisi Internal
-277,ABDUL MUSTOFA,PT ISS Indonesia,Transisi Internal
-278,Syukur Bagas Febianto,PT ISS Indonesia,Transisi Internal
-279,GUMILAR,PT ISS Indonesia,Transisi Internal
-280,ADI MULYANA,PT ISS Indonesia,Transisi Internal
-281,Muhammad Raffi Hakim,PT ISS Indonesia,Transisi Internal
-282,MUHAMMAD AFIF,PT ISS Indonesia,Transisi Internal
-283,Agus Triono,PT ISS Indonesia,Transisi Internal
-284,EKI DHANU ARDIYANTO,PT ISS Indonesia,Transisi Internal
-285,MUHAMMAD RASUL,PT ISS Indonesia,Transisi Internal
-286,ZULKIFLI,PT ISS Indonesia,Transisi Internal
-287,Rico Gustira,PT ISS Indonesia,Transisi Internal
-288,Agitya Saputra HR,PT ISS Indonesia,Transisi Internal
-289,Fawaz Abdul Yaman,PT ISS Indonesia,Transisi Internal
-290,ANDREW,PT ISS Indonesia,Transisi Internal
-291,Ari Rofidin,PT ISS Indonesia,Transisi Internal
-292,SOPIAN SYAHRIL MAULIDINA,PT ISS Indonesia,Transisi Internal
-293,Hasannuddin,PT ISS Indonesia,Transisi Internal
-294,Nafis Adam Saputra,PT ISS Indonesia,Transisi Internal
-295,Mohammad Rizkiyansyah,PT ISS Indonesia,Transisi Internal
-296,JONI ISKANDAR,PT ISS Indonesia,Transisi Internal
-297,Muhammad Riyandi,PT ISS Indonesia,Transisi Internal
-298,Wahid Irfan,PT ISS Indonesia,Transisi Internal
-299,MUHAMMAD HASAN,PT ISS Indonesia,Transisi Internal
-300,MAWARDI,PT ISS Indonesia,Transisi Internal
-301,HAIRUDIN,PT ISS Indonesia,Transisi Internal`;
+/* Seed data as JS array (bypass CSV parsing issues) */
+const SEED_DATA = [
+  ["001","Rakhmadi A. Kusumo","PPKGBK","Transisi Internal"],
+  ["002","Hendry Arisandi","PPKGBK","Transisi Internal"],
+  ["003","M. Rofik Anwar","PPKGBK","Transisi Internal"],
+  ["004","Hadi Sulistia","PPKGBK","Transisi Internal"],
+  ["005","Afrizal P. Hananto","PPKGBK","Transisi Internal"],
+  ["006","Asep Triyadi","PPKGBK","Transisi Internal"],
+  ["007","Leonardo Sipayung","PPKGBK","Transisi Internal"],
+  ["008","Sri Lestari Puji Astuti","PPKGBK","Transisi Internal"],
+  ["009","Jujuk Bandung Windargo","PPKGBK","Transisi Internal"],
+  ["010","Hariyadi","PPKGBK","Transisi Internal"],
+  ["011","David Prastyan","PPKGBK","Transisi Internal"],
+  ["012","Muhammad Trinugroho W.","PPKGBK","Transisi Internal"],
+  ["013","Yayu Srie Rahayu","PPKGBK","Transisi Internal"],
+  ["014","Brita Setiawati","PPKGBK","Transisi Internal"],
+  ["015","Mulyadi Sidik","PPKGBK","Transisi Internal"],
+  ["016","Sukamto","PPKGBK","Transisi Internal"],
+  ["017","Nathanael Sitepu","PPKGBK","Transisi Internal"],
+  ["018","Yos Fauzi Nur Muhammad","PPKGBK","Transisi Internal"],
+  ["019","Denny Lestiyana","PPKGBK","Transisi Internal"],
+  ["020","Dadi Setyanto","PPKGBK","Transisi Internal"],
+  ["021","Dyah Kumala Sari","PPKGBK","Transisi Internal"],
+  ["022","Raymond","PPKGBK","Transisi Internal"],
+  ["023","Muhammad Bram Glasmacher","PPKGBK","Transisi Internal"],
+  ["024","M. Anindhita Lintang Muzacky","PPKGBK","Transisi Internal"],
+  ["025","Dwi Kurniawati Pratiwi","PPKGBK","Transisi Internal"],
+  ["026","Agus Sutrisno","PPKGBK","Transisi Internal"],
+  ["027","Nindya Permadani","PPKGBK","Transisi Internal"],
+  ["028","Anisa Prita Dewi","PPKGBK","Transisi Internal"],
+  ["029","Fitria Nurhidayah","PPKGBK","Transisi Internal"],
+  ["030","Dita Andriana","PPKGBK","Transisi Internal"],
+  ["031","Agung Hartanto","PPKGBK","Transisi Internal"],
+  ["032","Reza Satria","PPKGBK","Transisi Internal"],
+  ["033","Derianto Iskandar","PPKGBK","Transisi Internal"],
+  ["034","Arnold Thamrin Halomoan","PPKGBK","Transisi Internal"],
+  ["035","Citra Ayu Fajri","PPKGBK","Transisi Internal"],
+  ["036","Riza Putra","PPKGBK","Transisi Internal"],
+  ["037","Fildza Shabrina","PPKGBK","Transisi Internal"],
+  ["038","Iis Haerudin","PPKGBK","Transisi Internal"],
+  ["039","Bangun Didik Susantoro","PPKGBK","Transisi Internal"],
+  ["040","Reza Heriansyah","PPKGBK","Transisi Internal"],
+  ["041","Ahmad Sya'roni","PPKGBK","Transisi Internal"],
+  ["042","Ary Dermawan","PPKGBK","Transisi Internal"],
+  ["043","Yozi Abrar","PPKGBK","Transisi Internal"],
+  ["044","Retno Ray Ulfa","PPKGBK","Transisi Internal"],
+  ["045","Sri Ratna Dian Purnami","PPKGBK","Transisi Internal"],
+  ["046","Sugeng Supriyanto","PPKGBK","Transisi Internal"],
+  ["047","Hendra Syahrizal","PPKGBK","Transisi Internal"],
+  ["048","Aprilia Ayu Permatasari","PPKGBK","Transisi Internal"],
+  ["049","Reza Irdiansyah","PPKGBK","Transisi Internal"],
+  ["050","Tri Novita Sari","PPKGBK","Transisi Internal"],
+  ["051","Doddy Febrianto","PPKGBK","Transisi Internal"],
+  ["052","Devi Riana Eka Anggrainingrum","PPKGBK","Transisi Internal"],
+  ["053","M. Satria Fikri","PPKGBK","Transisi Internal"],
+  ["054","Ahmad Yasfin","PPKGBK","Transisi Internal"],
+  ["055","Ervisa Mahditiara","PPKGBK","Transisi Internal"],
+  ["056","Ade Ardiansyah","PPKGBK","Transisi Internal"],
+  ["057","Mufti Rizal","PPKGBK","Transisi Internal"],
+  ["058","Musofa","PPKGBK","Transisi Internal"],
+  ["059","Tommy Hartanto","PPKGBK","Transisi Internal"],
+  ["060","Hadi Nurhidayat","PPKGBK","Transisi Internal"],
+  ["061","Ivan Dwicahyo Pratomo","PPKGBK","Transisi Internal"],
+  ["062","Agus Salim","PPKGBK","Transisi Internal"],
+  ["063","Bondan Irawan","PPKGBK","Transisi Internal"],
+  ["064","Christoffel Panjaitan","PPKGBK","Transisi Internal"],
+  ["065","Glory Leonard","PPKGBK","Transisi Internal"],
+  ["066","Gatot Dwi Satryo","PPKGBK","Transisi Internal"],
+  ["067","Yogo Nugraha","PPKGBK","Transisi Internal"],
+  ["068","Gilang Dhanu Pamungkas","PPKGBK","Transisi Internal"],
+  ["069","Bimo Ario Seto","PPKGBK","Transisi Internal"],
+  ["070","Dwiki Dafitra Suratno","PPKGBK","Transisi Internal"],
+  ["071","Aruna Irani","Bidang Aset PPKGBK","Transisi Internal"],
+  ["072","Rachmat Dwi Ryanda","Bidang Aset PPKGBK","Transisi Internal"],
+  ["073","Rizki Rifaldi","Bidang Aset PPKGBK","Transisi Internal"],
+  ["074","Sukma Irawan","Bidang Aset PPKGBK","Transisi Internal"],
+  ["075","Galuh Sukmaningrum","Bidang Aset PPKGBK","Transisi Internal"],
+  ["076","Elvina Susanti Sihombing","Bidang Aset PPKGBK","Transisi Internal"],
+  ["077","Meri Putri Sugianto","Bidang Aset PPKGBK","Transisi Internal"],
+  ["078","Nadhira Danessa Mongdong","Bidang Aset PPKGBK","Transisi Internal"],
+  ["079","Kartika Putri Nur Fitriana","Bidang Aset PPKGBK","Transisi Internal"],
+  ["080","Amelia Surya Ningsih","Bidang Aset PPKGBK","Transisi Internal"],
+  ["081","Rama Suwardika","Bidang Hukum dan Kehumasan PPKGBK","Transisi Internal"],
+  ["082","Agung Budi Wicaksono","Bidang Hukum dan Kehumasan PPKGBK","Transisi Internal"],
+  ["083","NurAziera","Bidang Hukum dan Kehumasan PPKGBK","Transisi Internal"],
+  ["084","Mafathilul Fahmi","Bidang Hukum dan Kehumasan PPKGBK","Transisi Internal"],
+  ["085","Noer Harisman","Bidang Hukum dan Kehumasan PPKGBK","Transisi Internal"],
+  ["086","Riesca I","Bidang Hukum dan Kehumasan PPKGBK","Transisi Internal"],
+  ["087","Farah Alifia","Bidang Hukum dan Kehumasan PPKGBK","Transisi Internal"],
+  ["088","Ganda Syahputra","Bidang Hukum dan Kehumasan PPKGBK","Transisi Internal"],
+  ["089","Hashifah Nabilah","Bidang Keuangan PPKGBK","Transisi Internal"],
+  ["090","Muhammad Abdillah Syakur","Bidang Keuangan PPKGBK","Transisi Internal"],
+  ["091","Aghnal Yusri","Bidang Keuangan PPKGBK","Transisi Internal"],
+  ["092","Retnowati","Bidang Keuangan PPKGBK","Transisi Internal"],
+  ["093","Siti Aminah Candra Kasih","Bidang Keuangan PPKGBK","Transisi Internal"],
+  ["094","Dwi Kurniawati","Bidang Keuangan PPKGBK","Transisi Internal"],
+  ["095","Audia Cendekiawati","Bidang Transisi Event dan Pelanggan PPKGBK","Transisi Internal"],
+  ["096","Azhadhita Aprilia","Bidang Transisi Event dan Pelanggan PPKGBK","Transisi Internal"],
+  ["097","Linda Sri Mulyati","Bidang Operasional PPKGBK","Transisi Internal"],
+  ["098","Khilman Khakiki","Bidang Operasional PPKGBK","Transisi Internal"],
+  ["099","Syahrul Romadhon","Bidang Operasional PPKGBK","Transisi Internal"],
+  ["100","Abdal Hiyariijal","Bidang Pengamanan, SDM, dan Umum PPKGBK","Transisi Internal"],
+  ["101","Rizki Rifaldi 2","Bidang Pengamanan, SDM, dan Umum PPKGBK","Transisi Internal"],
+  ["102","Syahrul Munir","Bidang Pengamanan, SDM, dan Umum PPKGBK","Transisi Internal"],
+  ["103","Dedi Sumedi","Bidang Pengamanan, SDM, dan Umum PPKGBK","Transisi Internal"],
+  ["104","Iming Saputra","Bidang Pengamanan, SDM, dan Umum PPKGBK","Transisi Internal"],
+  ["105","Aris Suyono","Bidang Pengamanan, SDM, dan Umum PPKGBK","Transisi Internal"],
+  ["106","Saepul Nurdin","Bidang Pengamanan, SDM, dan Umum PPKGBK","Transisi Internal"],
+  ["107","Agung Widhi Yulianto","Bidang Pengamanan, SDM, dan Umum PPKGBK","Transisi Internal"],
+  ["108","Anris Patiar","Bidang Pengamanan, SDM, dan Umum PPKGBK","Transisi Internal"],
+  ["109","Aris Haidir","Bidang Pengamanan, SDM, dan Umum PPKGBK","Transisi Internal"],
+  ["110","Nur Ahadi","Bidang Pengamanan, SDM, dan Umum PPKGBK","Transisi Internal"],
+  ["111","Baso Patatori","Bidang Pengamanan, SDM, dan Umum PPKGBK","Transisi Internal"],
+  ["112","Persanto Haryono","Bidang Pengamanan, SDM, dan Umum PPKGBK","Transisi Internal"],
+  ["113","Renaldi Alamsyah","Bidang Teknis, Pemeliharaan dan IT PPKGBK","Transisi Internal"],
+  ["114","Agus Saputra","Bidang Teknis, Pemeliharaan dan IT PPKGBK","Transisi Internal"],
+  ["115","Warto","Bidang Teknis, Pemeliharaan dan IT PPKGBK","Transisi Internal"],
+  ["116","Restu Winangkit","Bidang Teknis, Pemeliharaan dan IT PPKGBK","Transisi Internal"],
+  ["117","Suryaman","Bidang Teknis, Pemeliharaan dan IT PPKGBK","Transisi Internal"],
+  ["118","Harmono","Bidang Teknis, Pemeliharaan dan IT PPKGBK","Transisi Internal"],
+  ["119","Putra Anugrah","Bidang Teknis, Pemeliharaan dan IT PPKGBK","Transisi Internal"],
+  ["120","Muhammad Rizki","Bidang Teknis, Pemeliharaan dan IT PPKGBK","Transisi Internal"],
+  ["121","Dicky Uzazi Rengga Saputra","Bidang Teknis, Pemeliharaan dan IT PPKGBK","Transisi Internal"],
+  ["122","Rid Syaiful Bachri","Bidang Teknis, Pemeliharaan dan IT PPKGBK","Transisi Internal"],
+  ["123","Kardeni","Bidang Teknis, Pemeliharaan dan IT PPKGBK","Transisi Internal"],
+  ["124","Rahmat","Bidang Teknis, Pemeliharaan dan IT PPKGBK","Transisi Internal"],
+  ["125","Akhmad Wahyudi","Bidang Teknis, Pemeliharaan dan IT PPKGBK","Transisi Internal"],
+  ["126","Eko Pujiono","Bidang Teknis, Pemeliharaan dan IT PPKGBK","Transisi Internal"],
+  ["127","Nur Fajri","Bidang Teknis, Pemeliharaan dan IT PPKGBK","Transisi Internal"],
+  ["128","Muhamad Sofiulloh","Bidang Teknis, Pemeliharaan dan IT PPKGBK","Transisi Internal"],
+  ["129","Rizki Prasetyo","Bidang Teknis, Pemeliharaan dan IT PPKGBK","Transisi Internal"],
+  ["130","Djen Rinanto","Bidang Teknis, Pemeliharaan dan IT PPKGBK","Transisi Internal"],
+  ["131","Muhamad Hadinoor Gorbachev","Bidang Teknis, Pemeliharaan dan IT PPKGBK","Transisi Internal"],
+  ["132","Widi Megantoro","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["133","Nur Salam Boni","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["134","Dina Amalia Puspa","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["135","Yulistian","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["136","Abdan Faturohman","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["137","Nimas Pangestika Dewi","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["138","Dahono Pamungkas","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["139","Immanuel Martiandos","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["140","Alma Dewi Ananda","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["141","Dimas Yogi Febriansyah","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["142","Ruhiyat","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["143","Galang Pudya S","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["144","Zulfikar","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["145","Hotlan Parlindungan Siallagan","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["146","R A Marissa Kartika Anthrasita","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["147","Dede Sudrajat","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["148","Diesta Arum Pramesti","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["149","Tety Andriani","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["150","Herqutanto","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["151","Murniasih","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["152","Riawan Agung Hartoyo","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["153","Abdul Tolib","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["154","Yuliyan Sutrisna","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["155","Agus Wahyudi","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["156","Fifik Ali Perdana","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["157","Muhamad Yudi","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["158","Wike Rina Asyari","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["159","Parngoluan Situmorang","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["160","Saddam Firgiawan","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["161","Arsyi Triraharja","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["162","Aldi Hafeirda Putra","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["163","Wijoyo Hartono","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["164","Okky Catur Hatmojo","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["165","Andang Aprilianto","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["166","Dhede Aulia Ramadhan","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["167","Suharyono","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["168","Iman Aji Sasmito","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["169","Alphadio Doni Saputra","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["170","Widodo","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["171","Iwan Herniadi","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["172","Aditya Darmawan","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["173","Emir Fakhriza Purba","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["174","Tri Agus Saputro","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["175","Bambang Suprapto","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["176","Rusli","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["177","Dede Mulyadi","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["178","Ahmad Husin","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["179","R. Ahmad Idham","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["180","Dadan Eka Banda R","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["181","Nurlaila Fitriyani","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["182","Drajat Jiwandono","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["183","Agung Suslityo Utomo","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["184","Fuad Setiawan","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["185","Leni Marlina","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["186","Tursina","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["187","Hermawan","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["188","Devi Eriana Safira","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["189","Ridho Weedy Rachmanda","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["190","Tri Ana Gita Nursela","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["191","Roofiana Irawan","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["192","Muhamad Yusuf","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["193","Fathullah","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["194","Asep Suryana","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["195","Iwan Safarudin","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["196","Yusuf Fakhri Allaam","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["197","Singgih Aziz","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["198","Liberti Maranata Sitepu","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["199","Farid Muhajir","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["200","Herman","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["201","Aries Cahyadi","Kementerian Sekretariat Negara","Transisi Internal"],
+  ["202","ANDRES AZHARI","PT ISS Indonesia","Transisi Internal"],
+  ["203","Muslim","PT ISS Indonesia","Transisi Internal"],
+  ["204","Shelly Fathilah","PT ISS Indonesia","Transisi Internal"],
+  ["205","BAYU PERMANA","PT ISS Indonesia","Transisi Internal"],
+  ["206","Reza Nasution","PT ISS Indonesia","Transisi Internal"],
+  ["207","Attoyyibah Nurlatifah","PT ISS Indonesia","Transisi Internal"],
+  ["208","Romi Saputra","PT ISS Indonesia","Transisi Internal"],
+  ["209","NURJAYA","PT ISS Indonesia","Transisi Internal"],
+  ["210","Den Wilden Hotibul Umam","PT ISS Indonesia","Transisi Internal"],
+  ["211","HAMJAH ARIP MUNANDAR","PT ISS Indonesia","Transisi Internal"],
+  ["212","MUHAMMAD RESEKI ROMADHAN","PT ISS Indonesia","Transisi Internal"],
+  ["213","YAYANG RAMADHAN","PT ISS Indonesia","Transisi Internal"],
+  ["214","Ikbal Saputra","PT ISS Indonesia","Transisi Internal"],
+  ["215","HERDIKA SETIADI","PT ISS Indonesia","Transisi Internal"],
+  ["216","RIZAL GUSTOMI","PT ISS Indonesia","Transisi Internal"],
+  ["217","Deri Santoso","PT ISS Indonesia","Transisi Internal"],
+  ["218","REZA FAISAL","PT ISS Indonesia","Transisi Internal"],
+  ["219","ILHAM HUDORI","PT ISS Indonesia","Transisi Internal"],
+  ["220","Muhammad Farist Novianto","PT ISS Indonesia","Transisi Internal"],
+  ["221","DIKA ANGGARA DWIJAYANTO","PT ISS Indonesia","Transisi Internal"],
+  ["222","M. ZAENAL ABIDIN","PT ISS Indonesia","Transisi Internal"],
+  ["223","Nurhadi Achmad Solihin","PT ISS Indonesia","Transisi Internal"],
+  ["224","Alfian Tohari","PT ISS Indonesia","Transisi Internal"],
+  ["225","MOHAMAD BAHRUL ULUM","PT ISS Indonesia","Transisi Internal"],
+  ["226","ADIT EFA PRATAMA","PT ISS Indonesia","Transisi Internal"],
+  ["227","DERI SETIAWAN","PT ISS Indonesia","Transisi Internal"],
+  ["228","SUHENDRA","PT ISS Indonesia","Transisi Internal"],
+  ["229","MUHAMAD ARI HIDAYAT","PT ISS Indonesia","Transisi Internal"],
+  ["230","Aisyah Nur Aida","PT ISS Indonesia","Transisi Internal"],
+  ["231","AYYU EPENDI","PT ISS Indonesia","Transisi Internal"],
+  ["232","RANGGA ALAMSYAH","PT ISS Indonesia","Transisi Internal"],
+  ["233","MAYA JULIA","PT ISS Indonesia","Transisi Internal"],
+  ["234","NUR SIDIK FIRDAUS","PT ISS Indonesia","Transisi Internal"],
+  ["235","FITRIYA ITA MURNIYATI","PT ISS Indonesia","Transisi Internal"],
+  ["236","YAYAN SETIAWAN","PT ISS Indonesia","Transisi Internal"],
+  ["237","ALWI SANJAYA","PT ISS Indonesia","Transisi Internal"],
+  ["238","MIA FEBRYANTI","PT ISS Indonesia","Transisi Internal"],
+  ["239","ISMAIL","PT ISS Indonesia","Transisi Internal"],
+  ["240","HARIS ELFA ROBI","PT ISS Indonesia","Transisi Internal"],
+  ["241","ANNISA RAHMAWATI","PT ISS Indonesia","Transisi Internal"],
+  ["242","ARIFIN ILHAM","PT ISS Indonesia","Transisi Internal"],
+  ["243","ALYATUL QORIAH","PT ISS Indonesia","Transisi Internal"],
+  ["244","SUDIRWANTO","PT ISS Indonesia","Transisi Internal"],
+  ["245","Ahmad Solihin","PT ISS Indonesia","Transisi Internal"],
+  ["246","ANDRI SETIAWAN","PT ISS Indonesia","Transisi Internal"],
+  ["247","KHAIRUNNAS","PT ISS Indonesia","Transisi Internal"],
+  ["248","AZIZ SYIDIK MUNAWAR","PT ISS Indonesia","Transisi Internal"],
+  ["249","Nur Wahid","PT ISS Indonesia","Transisi Internal"],
+  ["250","AHMAD HAERUL HAFI","PT ISS Indonesia","Transisi Internal"],
+  ["251","Jeni Sujana","PT ISS Indonesia","Transisi Internal"],
+  ["252","KOMARUDIN","PT ISS Indonesia","Transisi Internal"],
+  ["253","Andrian Ramadhani","PT ISS Indonesia","Transisi Internal"],
+  ["254","Heri Heriyawan","PT ISS Indonesia","Transisi Internal"],
+  ["255","Muhamad Fajrin Firdaus","PT ISS Indonesia","Transisi Internal"],
+  ["256","Listianto Hanif Prasetyo","PT ISS Indonesia","Transisi Internal"],
+  ["257","HENDRI ANTIS","PT ISS Indonesia","Transisi Internal"],
+  ["258","Candra Pebriyana","PT ISS Indonesia","Transisi Internal"],
+  ["259","Bangkit Wahyu Alamsyah","PT ISS Indonesia","Transisi Internal"],
+  ["260","Muhamad Suhendi","PT ISS Indonesia","Transisi Internal"],
+  ["261","Muhammad Fajri Shamsuri","PT ISS Indonesia","Transisi Internal"],
+  ["262","Ujang","PT ISS Indonesia","Transisi Internal"],
+  ["263","Rifyal Cahya","PT ISS Indonesia","Transisi Internal"],
+  ["264","GANDA SAPUTRA","PT ISS Indonesia","Transisi Internal"],
+  ["265","Sumardi","PT ISS Indonesia","Transisi Internal"],
+  ["266","M. Andry Wijaya Kusuma","PT ISS Indonesia","Transisi Internal"],
+  ["267","ARI RIFANDI","PT ISS Indonesia","Transisi Internal"],
+  ["268","SYARIF SUPRIADI","PT ISS Indonesia","Transisi Internal"],
+  ["269","Wahyudi Al Mansyah","PT ISS Indonesia","Transisi Internal"],
+  ["270","Riski Aditya Prasetya","PT ISS Indonesia","Transisi Internal"],
+  ["271","Agung Gumelar","PT ISS Indonesia","Transisi Internal"],
+  ["272","Suhendi","PT ISS Indonesia","Transisi Internal"],
+  ["273","Adam Ridwan","PT ISS Indonesia","Transisi Internal"],
+  ["274","SUNINGRAT","PT ISS Indonesia","Transisi Internal"],
+  ["275","LARRY BENARDO SARAGIH","PT ISS Indonesia","Transisi Internal"],
+  ["276","Retno Aulia Muhammad Nur","PT ISS Indonesia","Transisi Internal"],
+  ["277","ABDUL MUSTOFA","PT ISS Indonesia","Transisi Internal"],
+  ["278","Syukur Bagas Febianto","PT ISS Indonesia","Transisi Internal"],
+  ["279","GUMILAR","PT ISS Indonesia","Transisi Internal"],
+  ["280","ADI MULYANA","PT ISS Indonesia","Transisi Internal"],
+  ["281","Muhammad Raffi Hakim","PT ISS Indonesia","Transisi Internal"],
+  ["282","MUHAMMAD AFIF","PT ISS Indonesia","Transisi Internal"],
+  ["283","Agus Triono","PT ISS Indonesia","Transisi Internal"],
+  ["284","EKI DHANU ARDIYANTO","PT ISS Indonesia","Transisi Internal"],
+  ["285","MUHAMMAD RASUL","PT ISS Indonesia","Transisi Internal"],
+  ["286","ZULKIFLI","PT ISS Indonesia","Transisi Internal"],
+  ["287","Rico Gustira","PT ISS Indonesia","Transisi Internal"],
+  ["288","Agitya Saputra HR","PT ISS Indonesia","Transisi Internal"],
+  ["289","Fawaz Abdul Yaman","PT ISS Indonesia","Transisi Internal"],
+  ["290","ANDREW","PT ISS Indonesia","Transisi Internal"],
+  ["291","Ari Rofidin","PT ISS Indonesia","Transisi Internal"],
+  ["292","SOPIAN SYAHRIL MAULIDINA","PT ISS Indonesia","Transisi Internal"],
+  ["293","Hasannuddin","PT ISS Indonesia","Transisi Internal"],
+  ["294","Nafis Adam Saputra","PT ISS Indonesia","Transisi Internal"],
+  ["295","Mohammad Rizkiyansyah","PT ISS Indonesia","Transisi Internal"],
+  ["296","JONI ISKANDAR","PT ISS Indonesia","Transisi Internal"],
+  ["297","Muhammad Riyandi","PT ISS Indonesia","Transisi Internal"],
+  ["298","Wahid Irfan","PT ISS Indonesia","Transisi Internal"],
+  ["299","MUHAMMAD HASAN","PT ISS Indonesia","Transisi Internal"],
+  ["300","MAWARDI","PT ISS Indonesia","Transisi Internal"],
+  ["301","HAIRUDIN","PT ISS Indonesia","Transisi Internal"]
+];
 
-/* ---------- INLINE SVG LOGOS ---------- */
 const GBK_LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 160"><text x="240" y="138" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="180" fill="#d8232a" letter-spacing="-8">GBK</text></svg>`;
-
 const KEMENSETNEG_LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240"><ellipse cx="100" cy="100" rx="92" ry="92" fill="none" stroke="#d4b015" stroke-width="7"/><ellipse cx="100" cy="100" rx="78" ry="78" fill="none" stroke="#d4b015" stroke-width="4"/><polygon points="100,40 117,93 173,93 128,126 145,179 100,146 55,179 72,126 27,93 83,93" fill="#f7c91f" stroke="#c39a00" stroke-width="2"/><text x="100" y="215" text-anchor="middle" font-family="Arial Black, Arial" font-weight="900" font-size="20" fill="#003a8c">KEMENTERIAN</text><text x="100" y="234" text-anchor="middle" font-family="Arial Black, Arial" font-weight="900" font-size="16" fill="#003a8c">SEKRETARIAT NEGARA</text></svg>`;
 
 function svgToImage(svg) {
@@ -631,31 +505,26 @@ function svgToImage(svg) {
     const url = URL.createObjectURL(blob);
     const img = new Image();
     img.onload = () => resolve(img);
-    img.onerror = () => { console.warn('SVG load failed'); resolve(null); };
+    img.onerror = () => resolve(null);
     img.src = url;
   });
 }
 
+/* Load seed data immediately into csvData */
+function loadSeedData() {
+  csvData = SEED_DATA.map(r => ({ no: r[0], name: r[1], unit: r[2], team: r[3] }));
+  console.log('[GBK] Seed loaded:', csvData.length, 'entries');
+}
+
 /* ---------- INIT ---------- */
 window.addEventListener('DOMContentLoaded', async () => {
-  console.log('[GBK] DOM loaded');
+  loadSeedData();
 
-  // Load logos first
-  try {
-    gbkLogoImg = await svgToImage(GBK_LOGO_SVG);
-    kemensetnegLogoImg = await svgToImage(KEMENSETNEG_LOGO_SVG);
-    console.log('[GBK] Logos loaded');
-  } catch(e) { console.error('Logo load error', e); }
+  gbkLogoImg = await svgToImage(GBK_LOGO_SVG);
+  kemensetnegLogoImg = await svgToImage(KEMENSETNEG_LOGO_SVG);
 
-  // Wait for fonts (best effort)
   if (document.fonts) {
-    try {
-      await document.fonts.load('900 64px Montserrat');
-      await document.fonts.load('700 32px Montserrat');
-      await document.fonts.ready;
-      fontsReady = true;
-      console.log('[GBK] Fonts ready');
-    } catch(e) { console.warn('Font load warning', e); }
+    try { await document.fonts.load('900 64px Montserrat'); await document.fonts.ready; } catch(e){}
   }
 
   const params = new URLSearchParams(window.location.search);
@@ -667,18 +536,23 @@ window.addEventListener('DOMContentLoaded', async () => {
 });
 
 function initGenerator() {
-  // Always start with default seed (force refresh)
-  parseCsvText(DEFAULT_CSV);
-  localStorage.setItem('gbk_csv', DEFAULT_CSV);
-  console.log('[GBK] Loaded', csvData.length, 'entries');
+  populateTeamFilter();
+  populatePersonSelect();
+  document.getElementById('entryCount').textContent = csvData.length;
 
   document.getElementById('csvUpload').addEventListener('change', handleCsvUpload);
   document.getElementById('photoUpload').addEventListener('change', handlePhotoUpload);
   document.getElementById('personSelect').addEventListener('change', renderPreview);
   document.getElementById('teamSelect').addEventListener('change', renderPreview);
-  document.getElementById('teamFilter').addEventListener('change', filterPersonList);
+  document.getElementById('teamFilter').addEventListener('change', () => { populatePersonSelect(); renderPreview(); });
   document.getElementById('titleInput').addEventListener('input', renderPreview);
   document.getElementById('manualPhoto').addEventListener('change', handleManualPhoto);
+  document.getElementById('btnUnlock').addEventListener('click', unlockManual);
+  document.getElementById('btnAddManual').addEventListener('click', addManualEntry);
+  document.getElementById('btnPng').addEventListener('click', () => exportSingle('png'));
+  document.getElementById('btnJpg').addEventListener('click', () => exportSingle('jpg'));
+  document.getElementById('btnPdf').addEventListener('click', () => exportSingle('pdf'));
+  document.getElementById('btnBatch').addEventListener('click', batchExport);
 
   document.querySelectorAll('.tab').forEach(t => {
     t.addEventListener('click', () => {
@@ -695,14 +569,10 @@ function initGenerator() {
 
 /* ---------- DATE ---------- */
 function getExpirationDate() {
-  const d = new Date();
-  d.setMonth(d.getMonth() + 3);
-  return d;
+  const d = new Date(); d.setMonth(d.getMonth() + 3); return d;
 }
 function formatDate(d) {
-  const dd = String(d.getDate()).padStart(2,'0');
-  const mm = String(d.getMonth()+1).padStart(2,'0');
-  return `${dd}/${mm}/${d.getFullYear()}`;
+  return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
 }
 
 /* ---------- CSV ---------- */
@@ -711,38 +581,27 @@ function handleCsvUpload(e) {
   if (!file) return;
   const reader = new FileReader();
   reader.onload = (ev) => {
-    localStorage.setItem('gbk_csv', ev.target.result);
-    parseCsvText(ev.target.result);
+    let result = Papa.parse(ev.target.result, { header: true, skipEmptyLines: true });
+    csvData = result.data.map(row => {
+      const norm = {};
+      for (const k in row) norm[k.trim()] = (row[k]||'').toString().trim();
+      return {
+        no: norm['No'] || '',
+        name: norm['Name'] || '',
+        unit: norm['Unit Kerja'] || '',
+        team: norm['Team Classifed'] || norm['Team Classified'] || norm['Team'] || 'Transisi Internal'
+      };
+    }).filter(r => r.name);
+    populateTeamFilter();
+    populatePersonSelect();
+    document.getElementById('entryCount').textContent = csvData.length;
     showStatus('CSV loaded: ' + csvData.length + ' rows', 'success');
   };
   reader.readAsText(file);
 }
 
-function parseCsvText(text) {
-  let result = Papa.parse(text, { header: true, skipEmptyLines: true });
-  if (result.data.length > 0 && Object.keys(result.data[0]).length < 2) {
-    result = Papa.parse(text, { header: true, delimiter: '\t', skipEmptyLines: true });
-  }
-  csvData = result.data.map(row => {
-    const norm = {};
-    for (const k in row) norm[k.trim()] = (row[k]||'').toString().trim();
-    return {
-      no: norm['No'] || norm['NO'] || '',
-      name: norm['Name'] || norm['Nama'] || '',
-      unit: norm['Unit Kerja'] || '',
-      team: norm['Team Classifed'] || norm['Team Classified'] || norm['Team'] || 'Transisi Internal'
-    };
-  }).filter(r => r.name);
-
-  populateTeamFilter();
-  populatePersonSelect();
-  const cnt = document.getElementById('entryCount');
-  if (cnt) cnt.textContent = csvData.length;
-}
-
 function populateTeamFilter() {
   const sel = document.getElementById('teamFilter');
-  if (!sel) return;
   const teams = [...new Set(csvData.map(r => r.team))];
   sel.innerHTML = '<option value="">-- All Teams --</option>';
   teams.forEach(t => {
@@ -754,8 +613,7 @@ function populateTeamFilter() {
 
 function populatePersonSelect() {
   const sel = document.getElementById('personSelect');
-  if (!sel) return;
-  const filter = document.getElementById('teamFilter')?.value || '';
+  const filter = document.getElementById('teamFilter').value;
   sel.innerHTML = '<option value="">-- Select --</option>';
   csvData.forEach((row, i) => {
     if (filter && row.team !== filter) return;
@@ -766,30 +624,17 @@ function populatePersonSelect() {
   });
 }
 
-function filterPersonList() { populatePersonSelect(); renderPreview(); }
-
 /* ---------- PHOTO ---------- */
 function handlePhotoUpload(e) {
-  const file = e.target.files[0];
-  if (!file) return;
+  const file = e.target.files[0]; if (!file) return;
   const reader = new FileReader();
-  reader.onload = (ev) => {
-    const img = new Image();
-    img.onload = () => { photoImg = img; renderPreview(); };
-    img.src = ev.target.result;
-  };
+  reader.onload = (ev) => { const img = new Image(); img.onload = () => { photoImg = img; renderPreview(); }; img.src = ev.target.result; };
   reader.readAsDataURL(file);
 }
-
 function handleManualPhoto(e) {
-  const file = e.target.files[0];
-  if (!file) return;
+  const file = e.target.files[0]; if (!file) return;
   const reader = new FileReader();
-  reader.onload = (ev) => {
-    const img = new Image();
-    img.onload = () => { photoImg = img; renderPreview(); };
-    img.src = ev.target.result;
-  };
+  reader.onload = (ev) => { const img = new Image(); img.onload = () => { photoImg = img; renderPreview(); }; img.src = ev.target.result; };
   reader.readAsDataURL(file);
 }
 
@@ -797,27 +642,21 @@ function handleManualPhoto(e) {
 function unlockManual() {
   const pw = document.getElementById('manualPassword').value;
   if (pw === MANUAL_PASSWORD) {
-    manualUnlocked = true;
     document.getElementById('manualLocked').classList.add('hidden');
     document.getElementById('manualForm').classList.remove('hidden');
     showStatus('Manual input unlocked.', 'success');
-  } else {
-    showStatus('Incorrect password.', 'error');
-  }
+  } else { showStatus('Incorrect password.', 'error'); }
 }
-
 function addManualEntry() {
   const name = document.getElementById('manualName').value.trim();
   const id = document.getElementById('manualId').value.trim();
   const team = document.getElementById('manualTeam').value;
-  const unit = document.getElementById('manualUnit').value.trim();
+  const unit = document.getElementById('manualUnit').value.trim() || 'PPKGBK';
   if (!name || !id) { showStatus('Name and ID required.', 'error'); return; }
-
-  manualData = { id, name, unit, team };
   csvData.push({ no: id, name, unit, team });
-  localStorage.setItem('gbk_csv', toCSV(csvData));
+  populateTeamFilter();
   populatePersonSelect();
-  // Select the new entry
+  document.getElementById('entryCount').textContent = csvData.length;
   const sel = document.getElementById('personSelect');
   sel.value = csvData.length - 1;
   document.getElementById('teamSelect').value = team;
@@ -825,89 +664,37 @@ function addManualEntry() {
   renderPreview();
 }
 
-function toCSV(rows) {
-  const header = 'No,Name,Unit Kerja,Team Classifed';
-  const body = rows.map(r => {
-    const esc = (v) => ((v||'')+'').includes(',') ? `"${v}"` : (v||'');
-    return [esc(r.no), esc(r.name), esc(r.unit), esc(r.team)].join(',');
-  }).join('\n');
-  return header + '\n' + body;
-}
-
 /* ---------- ID ---------- */
 function getDisplayId(row, teamOverride) {
   const team = teamOverride || row.team || 'Transisi Internal';
   const prefix = TEAM_PREFIX[team] || 'A';
-  let no = (row.no || '').toString();
-  if (/^[A-Z]/i.test(no)) no = no.substring(1);
+  let no = (row.no || '').toString().replace(/^[A-Za-z]/, '');
   return prefix + no;
 }
 function splitId(id) {
   const m = id.match(/^([A-Z])(.*)$/);
-  if (m) return { prefix: m[1], number: m[2] };
-  return { prefix: '', number: id };
+  return m ? { prefix: m[1], number: m[2] } : { prefix: '', number: id };
 }
 
 /* ---------- QR ---------- */
 function generateQRDataURL(payload, size=300) {
   return new Promise((resolve) => {
-    try {
-      const tempDiv = document.createElement('div');
-      tempDiv.style.position = 'absolute';
-      tempDiv.style.left = '-9999px';
-      document.body.appendChild(tempDiv);
-      new QRCode(tempDiv, {
-        text: payload, width: size, height: size,
-        correctLevel: QRCode.CorrectLevel.M
-      });
-      setTimeout(() => {
-        const cv = tempDiv.querySelector('canvas');
-        const dataUrl = cv ? cv.toDataURL() : '';
-        document.body.removeChild(tempDiv);
-        resolve(dataUrl);
-      }, 100);
-    } catch(e) { console.error('QR error', e); resolve(''); }
+    const tempDiv = document.createElement('div');
+    tempDiv.style.position = 'absolute'; tempDiv.style.left = '-9999px';
+    document.body.appendChild(tempDiv);
+    new QRCode(tempDiv, { text: payload, width: size, height: size, correctLevel: QRCode.CorrectLevel.M });
+    setTimeout(() => {
+      const cv = tempDiv.querySelector('canvas');
+      const dataUrl = cv ? cv.toDataURL() : '';
+      document.body.removeChild(tempDiv);
+      resolve(dataUrl);
+    }, 100);
   });
 }
 
-/* ---------- ROUNDED RECT ---------- */
+/* ---------- HELPERS ---------- */
 function roundRect(ctx, x, y, w, h, r) {
   if (typeof r === 'number') r = {tl:r,tr:r,br:r,bl:r};
   ctx.beginPath();
-  ctx.moveTo(x + r.tl, y);
-  ctx.lineTo(x + w - r.tr, y);
-  ctx.quadraticCurveTo(x+w, y, x+w, y+r.tr);
-  ctx.lineTo(x+w, y+h-r.br);
-  ctx.quadraticCurveTo(x+w, y+h, x+w-r.br, y+h);
-  ctx.lineTo(x+r.bl, y+h);
-  ctx.quadraticCurveTo(x, y+h, x, y+h-r.bl);
-  ctx.lineTo(x, y+r.tl);
-  ctx.quadraticCurveTo(x, y, x+r.tl, y);
-  ctx.closePath();
-}
-
-/* ---------- CARD RENDER ---------- */
-async function renderCard(canvas, data, options={}) {
-  const ctx = canvas.getContext('2d');
-  const W = canvas.width, H = canvas.height;
-  const team = data.team || 'Transisi Internal';
-  const bgColor = TEAM_COLORS[team] || '#5680c1';
-  const isRestricted = RESTRICTED_TEAMS.includes(team);
-  const FONT = "'Montserrat', 'Arial Black', Arial, sans-serif";
-
-  // Clear & background
-  ctx.clearRect(0,0,W,H);
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0,0,W,H);
-
-  // Rounded body with team color
-  ctx.save();
-  roundRect(ctx, 0, 0, W, H, 40);
-  ctx.clip();
-  ctx.fillStyle = bgColor;
-  ctx.fillRect(0,0,W,H);
-
-  // Subtle pattern lines
-  ctx.globalAlpha = 0.06;
-  ctx.strokeStyle = '#ffffff';
-  ctx.lineW
+  ctx.moveTo(x+r.tl, y);
+  ctx.lineTo(x+w-r.tr, y); ctx.quadraticCurveTo(x+w, y, x+w, y+r.t
