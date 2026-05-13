@@ -619,11 +619,45 @@ async function renderCard(canvas, data, options) {
   ctx.globalAlpha = 1;
   ctx.restore();
 
-  // Top white logo bar
-  const tbX = 50, tbY = 50, tbW = W - 100, tbH = 170;
-  ctx.fillStyle = '#fff';
-  rr(ctx, tbX, tbY, tbW, tbH, 30);
-  ctx.fill();
+ // Top white logo bar
+const tbX = 50, tbY = 50, tbW = W - 100, tbH = 170;
+ctx.fillStyle = '#fff';
+rrctx(ctx, tbX, tbY, tbW, tbH, 30);
+ctx.fill();
+
+// LOGO RENDERING: side by side, centered, fitted to border
+if (gbkLogoImg && kemensetnegLogoImg) {
+    const gap = 20;
+    const maxLogoHeight = tbH - 40; // Leave 20px padding top/bottom
+    const maxTotalWidth = tbW - 40; // Leave 20px padding left/right
+    
+    // Calculate scale to fit both side-by-side
+    // Ratio = (Image Width / Image Height)
+    const gRatio = gbkLogoImg.width / gbkLogoImg.height;
+    const kRatio = kemensetnegLogoImg.width / kemensetnegLogoImg.height;
+    
+    // We assume both logos have the same target height to look balanced
+    let drawH = maxLogoHeight;
+    let gW = drawH * gRatio;
+    let kW = drawH * kRatio;
+    
+    // If they are too wide together, scale them down
+    if (gW + kW + gap > maxTotalWidth) {
+        const scale = maxTotalWidth / (gW + kW + gap);
+        drawH *= scale;
+        gW *= scale;
+        kW *= scale;
+    }
+    
+    // Calculate start position to center the group
+    const totalW = gW + kW + gap;
+    const startX = tbX + (tbW / 2) - (totalW / 2);
+    const startY = tbY + (tbH / 2) - (drawH / 2);
+    
+    // Draw
+    ctx.drawImage(gbkLogoImg, startX, startY, gW, drawH);
+    ctx.drawImage(kemensetnegLogoImg, startX + gW + gap, startY, kW, drawH);
+}
 
  // GBK + Kemensetneg logos side by side, centered, not stretched
  
