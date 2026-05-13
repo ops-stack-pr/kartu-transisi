@@ -5,9 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>GBK ID Card Generator</title>
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -37,15 +35,14 @@
   .progress { width: 100%; height: 8px; background: #eee; border-radius: 4px; overflow: hidden; margin-top: 8px; display: none; }
   .progress-bar { height: 100%; background: #5680c1; width: 0; transition: width 0.2s; }
   .validation-view { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; background: #f0f2f5; }
-  .validation-view canvas { max-width: 95%; max-height: 80vh; height: auto; border-radius: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.2); }
-  .v-header { text-align: center; margin-bottom: 16px; }
-  .v-header h1 { margin: 0; color: #3a5d9e; font-weight: 900; text-transform: uppercase; }
+  .validation-view canvas { max-width: 95%; max-height: 80vh; border-radius: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.2); }
   .hidden { display: none !important; }
   .info-row { font-size: 11px; color: #666; margin-top: 6px; font-weight: 700; }
   .tabs { display: flex; gap: 4px; margin-bottom: 12px; border-bottom: 2px solid #ddd; }
   .tab { padding: 8px 14px; cursor: pointer; font-size: 12px; font-weight: 800; color: #888; border-bottom: 3px solid transparent; margin-bottom: -2px; text-transform: uppercase; }
   .tab.active { color: #5680c1; border-bottom-color: #5680c1; }
   .locked-overlay { background: #fff8e1; border: 2px dashed #f89a1c; border-radius: 8px; padding: 16px; text-align: center; }
+  .locked-overlay p { margin: 0 0 10px; font-size: 12px; color: #666; font-weight: 700; }
   @media (max-width: 900px) { .container { grid-template-columns: 1fr; } }
 </style>
 </head>
@@ -54,7 +51,7 @@
 <div id="generatorView">
   <header>
     <h1>🎫 GBK ID Card Generator</h1>
-    <p>Sekretariat Negara RI - PPKGBK</p>
+    <p>Sekretariat Negara RI - PPKGBK | Batch ID Card Generation with QR Validation</p>
   </header>
 
   <div class="container">
@@ -66,13 +63,19 @@
 
       <div id="tabSeed">
         <h2>1. Data & Photo</h2>
-        <div class="form-group"><label>CSV File (optional)</label><input type="file" id="csvUpload" accept=".csv" /></div>
         <div class="form-group"><label>Person Photo</label><input type="file" id="photoUpload" accept="image/*" /></div>
 
-        <h2 style="margin-top:18px;">2. Select Entry</h2>
-        <div class="form-group"><label>Team Category (filter)</label><select id="teamFilter"></select></div>
-        <div class="form-group"><label>Person (from CSV)</label><select id="personSelect"></select></div>
-        <div class="form-group"><label>Team (override)</label>
+        <h2>2. Select Entry</h2>
+        <div class="form-group">
+          <label>Team Category (filter)</label>
+          <select id="teamFilter"></select>
+        </div>
+        <div class="form-group">
+          <label>Person (from CSV)</label>
+          <select id="personSelect"></select>
+        </div>
+        <div class="form-group">
+          <label>Team (override)</label>
           <select id="teamSelect">
             <option value="">-- Auto from CSV --</option>
             <option value="Transisi Internal">Transisi Internal</option>
@@ -83,20 +86,24 @@
             <option value="Tamu/Tenant">Tamu/Tenant</option>
           </select>
         </div>
-        <div class="form-group"><label>Title Line</label><input type="text" id="titleInput" value="TIM PELAKSANA EKSEKUSI BLOK 15" /></div>
+        <div class="form-group">
+          <label>Title Line</label>
+          <input type="text" id="titleInput" value="TIM PELAKSANA EKSEKUSI BLOK 15" />
+        </div>
       </div>
 
       <div id="tabManual" class="hidden">
         <div id="manualLocked" class="locked-overlay">
-          <p style="margin:0 0 10px; font-size: 12px;">🔒 Enter password to unlock manual input</p>
+          <p>🔒 Locked. Enter password.</p>
           <input type="password" id="manualPassword" placeholder="Password" />
           <button id="btnUnlock" style="margin-top:8px;">Unlock</button>
         </div>
         <div id="manualForm" class="hidden">
           <h2>Manual Entry</h2>
           <div class="form-group"><label>Full Name</label><input type="text" id="manualName"/></div>
-          <div class="form-group"><label>ID Number</label><input type="text" id="manualId" placeholder="123"/></div>
-          <div class="form-group"><label>Team</label>
+          <div class="form-group"><label>ID Number</label><input type="text" id="manualId" placeholder="e.g., 123"/></div>
+          <div class="form-group">
+            <label>Team</label>
             <select id="manualTeam">
               <option value="Transisi Internal">Transisi Internal</option>
               <option value="Transisi Eksternal">Transisi Eksternal</option>
@@ -117,7 +124,7 @@
       <button id="btnJpg">JPG</button>
       <button id="btnPdf">PDF</button>
       <br/>
-      <button class="success" id="btnBatch">📦 Batch Export ZIP (All)</button>
+      <button class="success" id="btnBatch">📦 Batch Export ZIP</button>
 
       <div class="progress" id="progressContainer"><div class="progress-bar" id="progressBar"></div></div>
       <div class="status" id="statusMsg"></div>
@@ -132,9 +139,9 @@
 </div>
 
 <div id="validationView" class="validation-view hidden">
-  <div class="v-header">
-    <h1>🔐 ID Card Validation</h1>
-    <div id="validationTimestamp" style="font-size:12px;color:#555;font-weight:600;"></div>
+  <div style="text-align:center; margin-bottom:16px;">
+    <h1 style="margin:0; color:#3a5d9e; font-weight:900; text-transform:uppercase;">🔐 ID Card Validation</h1>
+    <div id="validationTimestamp" style="font-size:12px; color:#555; margin-top:6px;"></div>
   </div>
   <canvas id="validationCanvas" width="1063" height="1535"></canvas>
   <div id="validationResultText" style="margin-top:16px; font-size:18px; font-weight:900;"></div>
@@ -144,7 +151,8 @@
 "use strict";
 
 /* ============================================================
-   GBK ID CARD GENERATOR — STABLE BUILD
+   GBK ID CARD GENERATOR - DEFINITIVE FIX
+   Inline JS seed array, simple wiring, robust render.
    ============================================================ */
 
 const TEAM_COLORS = {
@@ -166,12 +174,8 @@ const TEAM_PREFIX = {
 const RESTRICTED_TEAMS = ["Keamanan","Kebersihan","Media","Tamu/Tenant"];
 const MANUAL_PASSWORD = "gbkmantapjaya";
 
-let csvData = [];
-let photoImg = null;
-let gbkLogoImg = null;
-let kemensetnegLogoImg = null;
-
-const SEED_DATA = [
+// Hard-coded seed (Name, Unit, Team grouped by Unit)
+const SEED = [
 ["001","Rakhmadi A. Kusumo","PPKGBK","Transisi Internal"],
 ["002","Hendry Arisandi","PPKGBK","Transisi Internal"],
 ["003","M. Rofik Anwar","PPKGBK","Transisi Internal"],
@@ -475,271 +479,533 @@ const SEED_DATA = [
 ["301","HAIRUDIN","PT ISS Indonesia","Transisi Internal"]
 ];
 
-/* ---- LOGOS ---- */
-const GBK_LOGO_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 160"><text x="240" y="138" text-anchor="middle" font-family="Arial Black, Arial" font-weight="900" font-size="180" fill="#d8232a" letter-spacing="-8">GBK</text></svg>';
-const KEM_LOGO_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240"><ellipse cx="100" cy="100" rx="92" ry="92" fill="none" stroke="#d4b015" stroke-width="7"/><ellipse cx="100" cy="100" rx="78" ry="78" fill="none" stroke="#d4b015" stroke-width="4"/><polygon points="100,40 117,93 173,93 128,126 145,179 100,146 55,179 72,126 27,93 83,93" fill="#f7c91f" stroke="#c39a00" stroke-width="2"/><text x="100" y="215" text-anchor="middle" font-family="Arial Black, Arial" font-weight="900" font-size="20" fill="#003a8c">KEMENTERIAN</text><text x="100" y="234" text-anchor="middle" font-family="Arial Black, Arial" font-weight="900" font-size="16" fill="#003a8c">SEKRETARIAT NEGARA</text></svg>';
+let DATA = SEED.map(r => ({ no: r[0], name: r[1], unit: r[2], team: r[3] }));
+let photoImg = null;
+let gbkLogoImg = null;
+let kemensetnegLogoImg = null;
 
-function svgToImage(svg) {
-  return new Promise(function(resolve) {
-    var img = new Image();
-    img.onload = function() { resolve(img); };
-    img.onerror = function() { resolve(null); };
-    img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
+/* ---------- LOGOS ---------- */
+function makeLogos() {
+  return new Promise(resolve => {
+    let done = 0;
+    const check = () => { done++; if (done === 2) resolve(); };
+
+    const gbkSvg = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 480 160'><text x='240' y='138' text-anchor='middle' font-family='Arial Black, Arial' font-weight='900' font-size='180' fill='%23d8232a' letter-spacing='-8'>GBK</text></svg>`;
+    const kemSvg = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 240'><ellipse cx='100' cy='100' rx='92' ry='92' fill='none' stroke='%23d4b015' stroke-width='7'/><ellipse cx='100' cy='100' rx='78' ry='78' fill='none' stroke='%23d4b015' stroke-width='4'/><polygon points='100,40 117,93 173,93 128,126 145,179 100,146 55,179 72,126 27,93 83,93' fill='%23f7c91f' stroke='%23c39a00' stroke-width='2'/><text x='100' y='215' text-anchor='middle' font-family='Arial Black, Arial' font-weight='900' font-size='20' fill='%23003a8c'>KEMENTERIAN</text><text x='100' y='234' text-anchor='middle' font-family='Arial Black, Arial' font-weight='900' font-size='16' fill='%23003a8c'>SEKRETARIAT NEGARA</text></svg>`;
+
+    const g = new Image();
+    g.onload = () => { gbkLogoImg = g; check(); };
+    g.onerror = check;
+    g.src = gbkSvg;
+
+    const k = new Image();
+    k.onload = () => { kemensetnegLogoImg = k; check(); };
+    k.onerror = check;
+    k.src = kemSvg;
   });
 }
 
-/* ---- INIT (runs immediately) ---- */
-function loadSeed() {
-  csvData = SEED_DATA.map(function(r) {
-    return { no: r[0], name: r[1], unit: r[2], team: r[3] };
-  });
-}
+/* ---------- DATE ---------- */
+function expDate() { const d = new Date(); d.setMonth(d.getMonth()+3); return d; }
+function fmt(d) { return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`; }
 
+/* ---------- POPULATE DROPDOWNS ---------- */
 function populateTeamFilter() {
-  var sel = document.getElementById('teamFilter');
-  if (!sel) return;
-  var teams = {};
-  csvData.forEach(function(r) { teams[r.team] = true; });
-  var html = '<option value="">-- All Teams --</option>';
-  Object.keys(teams).forEach(function(t) {
-    html += '<option value="' + t + '">' + t + '</option>';
+  const sel = document.getElementById('teamFilter');
+  const units = [...new Set(DATA.map(r => r.unit))].sort();
+  sel.innerHTML = '<option value="">-- All Units --</option>';
+  units.forEach(u => {
+    const o = document.createElement('option');
+    o.value = u; o.textContent = u;
+    sel.appendChild(o);
   });
-  sel.innerHTML = html;
 }
 
 function populatePersonSelect() {
-  var sel = document.getElementById('personSelect');
-  if (!sel) return;
-  var filter = document.getElementById('teamFilter').value;
-  var html = '<option value="">-- Select --</option>';
-  csvData.forEach(function(row, i) {
-    if (filter && row.team !== filter) return;
-    html += '<option value="' + i + '">' + row.no + ' - ' + row.name + '</option>';
+  const sel = document.getElementById('personSelect');
+  const filter = document.getElementById('teamFilter').value;
+  sel.innerHTML = '<option value="">-- Select Person --</option>';
+  DATA.forEach((row, i) => {
+    if (filter && row.unit !== filter) return;
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = `${row.no} - ${row.name}`;
+    sel.appendChild(opt);
   });
-  sel.innerHTML = html;
 }
 
-function updateEntryCount() {
-  document.getElementById('entryCount').textContent = csvData.length;
-}
-
-function showStatus(msg, type) {
-  var el = document.getElementById('statusMsg');
-  el.className = 'status ' + (type || 'info');
-  el.textContent = msg;
-}
-
-/* ---- DATE ---- */
-function getExpirationDate() {
-  var d = new Date(); d.setMonth(d.getMonth() + 3); return d;
-}
-function formatDate(d) {
-  return String(d.getDate()).padStart(2,'0') + '/' +
-         String(d.getMonth()+1).padStart(2,'0') + '/' +
-         d.getFullYear();
-}
-
-/* ---- ID ---- */
-function getDisplayId(row, teamOverride) {
-  var team = teamOverride || row.team || 'Transisi Internal';
-  var prefix = TEAM_PREFIX[team] || 'A';
-  var no = (row.no || '').toString().replace(/^[A-Za-z]/, '');
+/* ---------- ID ---------- */
+function displayId(row, teamOverride) {
+  const team = teamOverride || row.team || 'Transisi Internal';
+  const prefix = TEAM_PREFIX[team] || 'A';
+  let no = (row.no || '').toString().replace(/^[A-Za-z]+/, '');
   return prefix + no;
 }
 
-/* ---- QR ---- */
-function generateQRDataURL(payload, size) {
-  size = size || 300;
-  return new Promise(function(resolve) {
-    var tempDiv = document.createElement('div');
-    tempDiv.style.position = 'absolute';
-    tempDiv.style.left = '-9999px';
-    document.body.appendChild(tempDiv);
+/* ---------- QR ---------- */
+function makeQR(text, size) {
+  return new Promise(resolve => {
+    const div = document.createElement('div');
+    div.style.cssText = 'position:absolute;left:-9999px';
+    document.body.appendChild(div);
     try {
-      new QRCode(tempDiv, { text: payload, width: size, height: size, correctLevel: QRCode.CorrectLevel.M });
+      new QRCode(div, { text, width: size, height: size, correctLevel: QRCode.CorrectLevel.M });
+      setTimeout(() => {
+        const cv = div.querySelector('canvas');
+        const url = cv ? cv.toDataURL() : '';
+        document.body.removeChild(div);
+        resolve(url);
+      }, 120);
     } catch(e) {
-      console.error('QR error:', e);
-      document.body.removeChild(tempDiv);
+      document.body.removeChild(div);
       resolve('');
-      return;
     }
-    setTimeout(function() {
-      var cv = tempDiv.querySelector('canvas');
-      var dataUrl = cv ? cv.toDataURL() : '';
-      document.body.removeChild(tempDiv);
-      resolve(dataUrl);
-    }, 120);
   });
 }
 
-/* ---- DRAW HELPERS ---- */
-function roundRect(ctx, x, y, w, h, r) {
+/* ---------- ROUND RECT ---------- */
+function rr(ctx, x, y, w, h, r) {
   ctx.beginPath();
   ctx.moveTo(x+r, y);
-  ctx.lineTo(x+w-r, y);
-  ctx.quadraticCurveTo(x+w, y, x+w, y+r);
-  ctx.lineTo(x+w, y+h-r);
-  ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
-  ctx.lineTo(x+r, y+h);
-  ctx.quadraticCurveTo(x, y+h, x, y+h-r);
-  ctx.lineTo(x, y+r);
-  ctx.quadraticCurveTo(x, y, x+r, y);
+  ctx.arcTo(x+w, y, x+w, y+h, r);
+  ctx.arcTo(x+w, y+h, x, y+h, r);
+  ctx.arcTo(x, y+h, x, y, r);
+  ctx.arcTo(x, y, x+w, y, r);
   ctx.closePath();
 }
 
-function drawCover(ctx, img, x, y, w, h) {
-  var iw = img.width, ih = img.height;
-  var ir = iw/ih, dr = w/h;
-  var sx=0, sy=0, sw=iw, sh=ih;
-  if (ir > dr) { sw = ih*dr; sx = (iw-sw)/2; }
-  else { sh = iw/dr; sy = (ih-sh)/2; }
+/* ---------- IMAGE COVER ---------- */
+function imgCover(ctx, img, x, y, w, h) {
+  const ir = img.width / img.height;
+  const dr = w / h;
+  let sx=0, sy=0, sw=img.width, sh=img.height;
+  if (ir > dr) { sw = img.height * dr; sx = (img.width - sw) / 2; }
+  else { sh = img.width / dr; sy = (img.height - sh) / 2; }
   ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
 }
 
-function drawContain(ctx, img, x, y, w, h) {
-  var iw = img.width, ih = img.height;
-  var ir = iw/ih, dr = w/h;
-  var dw = w, dh = h;
-  if (ir > dr) dh = w/ir;
-  else dw = h*ir;
-  ctx.drawImage(img, x + (w-dw)/2, y + (h-dh)/2, dw, dh);
-}
-
-/* ---- RENDER CARD ---- */
+/* ---------- RENDER CARD ---------- */
 async function renderCard(canvas, data, options) {
   options = options || {};
-  var ctx = canvas.getContext('2d');
-  var W = canvas.width, H = canvas.height;
-  var team = data.team || 'Transisi Internal';
-  var bgColor = TEAM_COLORS[team] || '#5680c1';
-  var isRestricted = RESTRICTED_TEAMS.indexOf(team) !== -1;
-  var FONT = "'Montserrat', 'Arial Black', Arial, sans-serif";
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const team = data.team || 'Transisi Internal';
+  const bg = TEAM_COLORS[team] || '#5680c1';
+  const restricted = RESTRICTED_TEAMS.indexOf(team) !== -1;
+  const FF = "'Montserrat','Arial Black',Arial,sans-serif";
 
-  ctx.clearRect(0,0,W,H);
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0,0,W,H);
+  // White base
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, W, H);
 
-  // Rounded body
+  // Colored body
   ctx.save();
-  roundRect(ctx, 0, 0, W, H, 40);
+  rr(ctx, 0, 0, W, H, 40);
   ctx.clip();
-  ctx.fillStyle = bgColor;
-  ctx.fillRect(0,0,W,H);
-  // subtle pattern
-  ctx.globalAlpha = 0.07;
-  ctx.strokeStyle = '#ffffff';
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  // Vertical pattern
+  ctx.globalAlpha = 0.06;
+  ctx.strokeStyle = '#fff';
   ctx.lineWidth = 1;
-  for (var x = 0; x < W; x += 18) {
-    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+  for (let x = 0; x < W; x += 22) {
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, H);
+    ctx.stroke();
   }
   ctx.globalAlpha = 1;
   ctx.restore();
 
-  /* Top white logo box */
-  var topX = 50, topY = 50, topW = W-100, topH = 170;
-  ctx.fillStyle = '#ffffff';
-  roundRect(ctx, topX, topY, topW, topH, 30);
+  // Top white logo bar
+  const tbX = 50, tbY = 50, tbW = W - 100, tbH = 170;
+  ctx.fillStyle = '#fff';
+  rr(ctx, tbX, tbY, tbW, tbH, 30);
   ctx.fill();
 
   if (gbkLogoImg) {
-    var gbkW = 340, gbkH = 120;
-    drawContain(ctx, gbkLogoImg, topX + 40, topY + (topH - gbkH)/2, gbkW, gbkH);
+    const gw = 320, gh = 110;
+    ctx.drawImage(gbkLogoImg, tbX + tbW/2 - gw - 10, tbY + (tbH-gh)/2, gw, gh);
   }
   if (kemensetnegLogoImg) {
-    var kW = 130, kH = 150;
-    drawContain(ctx, kemensetnegLogoImg, topX + topW - kW - 40, topY + (topH - kH)/2, kW, kH);
+    const ks = 140;
+    ctx.drawImage(kemensetnegLogoImg, tbX + tbW/2 + 30, tbY + (tbH-ks)/2, ks*0.85, ks);
   }
 
-  /* Title */
-  ctx.fillStyle = '#ffffff';
+  // Title
+  ctx.fillStyle = '#fff';
   ctx.textAlign = 'center';
-  ctx.font = '900 64px ' + FONT;
-  var title = (options.title || data.title || 'TIM PELAKSANA EKSEKUSI BLOK 15').toUpperCase();
-  wrapCenterText(ctx, title, W/2, topY + topH + 80, W - 120, 70);
+  ctx.font = `900 64px ${FF}`;
+  const title = (data.title || 'TIM PELAKSANA EKSEKUSI BLOK 15').toUpperCase();
+  const words = title.split(' ');
+  const lines = [];
+  let line = '';
+  for (let i = 0; i < words.length; i++) {
+    const test = line + words[i] + ' ';
+    if (ctx.measureText(test).width > W - 120 && line) {
+      lines.push(line.trim());
+      line = words[i] + ' ';
+    } else line = test;
+  }
+  if (line) lines.push(line.trim());
+  let titleY = tbY + tbH + 80;
+  lines.forEach((ln, i) => ctx.fillText(ln, W/2, titleY + i*70));
 
-  /* Photo */
-  var photoW = 540, photoH = 600;
-  var photoX = (W - photoW)/2;
-  var photoY = 460;
+  // Photo
+  const pW = 540, pH = 600;
+  const pX = (W - pW) / 2;
+  const pY = 470;
+  ctx.fillStyle = '#fff';
+  rr(ctx, pX - 8, pY - 8, pW + 16, pH + 16, 18);
+  ctx.fill();
 
-  if (isRestricted) {
-    // privacy mask - hidden photo placeholder with locked icon
-    ctx.fillStyle = 'rgba(255,255,255,0.25)';
-    roundRect(ctx, photoX-8, photoY-8, photoW+16, photoH+16, 18);
-    ctx.fill();
+  if (restricted) {
+    // Privacy mask - show silhouette
     ctx.save();
-    roundRect(ctx, photoX, photoY, photoW, photoH, 12);
+    rr(ctx, pX, pY, pW, pH, 12);
     ctx.clip();
-    ctx.fillStyle = 'rgba(0,0,0,0.15)';
-    ctx.fillRect(photoX, photoY, photoW, photoH);
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '900 80px ' + FONT;
+    ctx.fillStyle = '#e0e0e0';
+    ctx.fillRect(pX, pY, pW, pH);
+    ctx.fillStyle = '#999';
+    ctx.font = `900 48px ${FF}`;
+    ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('🔒', W/2, photoY + photoH/2 - 40);
-    ctx.font = '900 36px ' + FONT;
-    ctx.fillText('PRIVACY', W/2, photoY + photoH/2 + 40);
-    ctx.fillText('PROTECTED', W/2, photoY + photoH/2 + 80);
+    ctx.fillText('🔒 RESTRICTED', pX + pW/2, pY + pH/2 - 30);
+    ctx.font = `700 28px ${FF}`;
+    ctx.fillText('PRIVACY MASK', pX + pW/2, pY + pH/2 + 30);
     ctx.textBaseline = 'alphabetic';
     ctx.restore();
   } else {
-    ctx.fillStyle = '#ffffff';
-    roundRect(ctx, photoX-8, photoY-8, photoW+16, photoH+16, 18);
-    ctx.fill();
     ctx.save();
-    roundRect(ctx, photoX, photoY, photoW, photoH, 12);
+    rr(ctx, pX, pY, pW, pH, 12);
     ctx.clip();
-    var pImg = options.photoImg || photoImg;
-    if (pImg) {
-      drawCover(ctx, pImg, photoX, photoY, photoW, photoH);
+    if (photoImg || options.photoImg) {
+      imgCover(ctx, options.photoImg || photoImg, pX, pY, pW, pH);
     } else {
       ctx.fillStyle = '#d6d6d6';
-      ctx.fillRect(photoX, photoY, photoW, photoH);
+      ctx.fillRect(pX, pY, pW, pH);
       ctx.fillStyle = '#888';
-      ctx.font = '700 32px ' + FONT;
+      ctx.font = `700 32px ${FF}`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText('UPLOAD PHOTO', photoX + photoW/2, photoY + photoH/2);
+      ctx.fillText('UPLOAD PHOTO', pX + pW/2, pY + pH/2);
       ctx.textBaseline = 'alphabetic';
     }
     ctx.restore();
   }
 
-  /* Name */
-  if (!isRestricted) {
-    ctx.fillStyle = '#ffffff';
+  // Name (hidden if restricted)
+  if (!restricted) {
+    ctx.fillStyle = '#fff';
     ctx.textAlign = 'center';
-    var nameText = (data.name || '').toUpperCase();
-    var fSize = 56;
-    ctx.font = '900 ' + fSize + 'px ' + FONT;
-    while (ctx.measureText(nameText).width > W - 140 && fSize > 28) {
-      fSize -= 2;
-      ctx.font = '900 ' + fSize + 'px ' + FONT;
+    const nameText = (data.name || '').toUpperCase();
+    let nfs = 56;
+    ctx.font = `900 ${nfs}px ${FF}`;
+    while (ctx.measureText(nameText).width > W - 140 && nfs > 30) {
+      nfs -= 2;
+      ctx.font = `900 ${nfs}px ${FF}`;
     }
-    ctx.fillText(nameText, W/2, photoY + photoH + 90);
-  } else {
-    // restricted: blank space to keep layout
-    ctx.fillStyle = 'rgba(255,255,255,0.5)';
-    ctx.font = '900 36px ' + FONT;
-    ctx.textAlign = 'center';
-    ctx.fillText('•••••••••••••••', W/2, photoY + photoH + 90);
+    ctx.fillText(nameText, W/2, pY + pH + 95);
   }
 
-  /* Bottom white info box */
-  var boxY = photoY + photoH + 130;
-  var boxX = 50, boxW = W - 100, boxH = 320;
-  ctx.fillStyle = '#ffffff';
-  roundRect(ctx, boxX, boxY, boxW, boxH, 30);
+  // Bottom info box
+  const ibY = pY + pH + (restricted ? 60 : 130);
+  const ibX = 50, ibW = W - 100, ibH = 320;
+  ctx.fillStyle = '#fff';
+  rr(ctx, ibX, ibY, ibW, ibH, 30);
   ctx.fill();
 
-  /* QR */
-  var qrPad = 28;
-  var qrSize = boxH - qrPad*2;
-  var qrX = boxX + qrPad, qrY = boxY + qrPad;
+  // QR / Stamp on left
+  const qPad = 28;
+  const qSize = ibH - qPad*2;
+  const qX = ibX + qPad;
+  const qY = ibY + qPad;
 
-  if (options.validationStamp) {
-    drawStamp(ctx, qrX, qrY, qrSize, options.validationStamp);
+  if (options.stamp) {
+    drawStamp(ctx, qX, qY, qSize, options.stamp);
   } else {
-    var url = window.location.origin + window.location.pathname + '?mode=verify&id=' + encodeURIComponent(data.id);
-    var qrUrl = await generateQRDataURL(url, 300);
+    const payload = `${window.location.origin}${window.location.pathname}?mode=verify&id=${encodeURIComponent(data.id)}`;
+    const qrUrl = await makeQR(payload, 280);
     if (qrUrl) {
-      var qrImg = await new Promise(function(res) {
+      const qImg = new Image();
+      await new Promise(r => { qImg.onload = r; qImg.onerror = r; qImg.src = qrUrl; });
+      ctx.fillStyle = '#eee';
+      rr(ctx, qX-6, qY-6, qSize+12, qSize+12, 12);
+      ctx.fill();
+      ctx.drawImage(qImg, qX, qY, qSize, qSize);
+    }
+  }
+
+  // Right: Team + ID
+  const rX = qX + qSize + 40;
+  const rW = ibX + ibW - rX - 30;
+  const rCX = rX + rW/2;
+
+  ctx.fillStyle = '#222';
+  ctx.textAlign = 'center';
+  let teamLabel = team.toUpperCase();
+  let tfs = 42;
+  ctx.font = `900 ${tfs}px ${FF}`;
+  while (ctx.measureText(teamLabel).width > rW && tfs > 22) {
+    tfs -= 2;
+    ctx.font = `900 ${tfs}px ${FF}`;
+  }
+  ctx.fillText(teamLabel, rCX, ibY + 100);
+
+  // ID
+  ctx.fillStyle = bg;
+  let idText = data.id;
+  let ifs = 110;
+  ctx.font = `900 ${ifs}px ${FF}`;
+  while (ctx.measureText(idText).width > rW && ifs > 50) {
+    ifs -= 4;
+    ctx.font = `900 ${ifs}px ${FF}`;
+  }
+  ctx.fillText(idText, rCX, ibY + 230);
+
+  // Valid until
+  ctx.fillStyle = '#666';
+  ctx.font = `700 18px ${FF}`;
+  ctx.fillText('VALID UNTIL: ' + fmt(expDate()), rCX, ibY + 275);
+
+  // Color legend pills
+  const pY2 = ibY + ibH + 35;
+  const pillW = 70, pillH = 50, gap = 18;
+  const totalW = 6*pillW + 5*gap;
+  let px = (W - totalW)/2;
+  const teamsArr = ['Transisi Internal','Transisi Eksternal','Keamanan','Kebersihan','Media','Tamu/Tenant'];
+  const letters = ['A','B','C','D','E','F'];
+  for (let i = 0; i < 6; i++) {
+    ctx.fillStyle = TEAM_COLORS[teamsArr[i]];
+    rr(ctx, px, pY2, pillW, pillH, 14);
+    ctx.fill();
+    if (teamsArr[i] === team) {
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 4;
+      rr(ctx, px-2, pY2-2, pillW+4, pillH+4, 16);
+      ctx.stroke();
+    }
+    ctx.fillStyle = '#222';
+    ctx.font = `900 32px ${FF}`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(letters[i], px + pillW/2, pY2 + pillH/2);
+    ctx.textBaseline = 'alphabetic';
+    px += pillW + gap;
+  }
+}
+
+function drawStamp(ctx, x, y, size, type) {
+  ctx.save();
+  const valid = type === 'VALID';
+  const col = valid ? '#28a745' : '#dc3545';
+  ctx.fillStyle = '#f5f5f5';
+  rr(ctx, x, y, size, size, 12);
+  ctx.fill();
+
+  ctx.translate(x + size/2, y + size/2);
+  ctx.rotate(-Math.PI/12);
+  ctx.strokeStyle = col;
+  ctx.lineWidth = 10;
+  ctx.beginPath();
+  ctx.arc(0, 0, size/2 - 14, 0, Math.PI*2);
+  ctx.stroke();
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.arc(0, 0, size/2 - 26, 0, Math.PI*2);
+  ctx.stroke();
+  ctx.fillStyle = col;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.font = "900 60px 'Montserrat',Arial";
+  ctx.fillText(type, 0, -10);
+  ctx.font = "700 22px 'Montserrat',Arial";
+  ctx.fillText('VERIFIED', 0, 38);
+  ctx.restore();
+}
+
+/* ---------- PREVIEW ---------- */
+async function renderPreview() {
+  const sel = document.getElementById('personSelect');
+  const canvas = document.getElementById('cardCanvas');
+  const idx = sel.value;
+  if (idx === '' || !DATA[idx]) {
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#f8f9fa';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = '#999';
+    ctx.font = "700 42px 'Montserrat',Arial";
+    ctx.textAlign = 'center';
+    ctx.fillText('Select a person to preview', canvas.width/2, canvas.height/2);
+    return;
+  }
+  const row = DATA[idx];
+  const teamOv = document.getElementById('teamSelect').value;
+  const team = teamOv || row.team;
+  const id = displayId(row, team);
+  const title = document.getElementById('titleInput').value;
+  await renderCard(canvas, { id, name: row.name, unit: row.unit, team, title });
+}
+
+/* ---------- EXPORT ---------- */
+async function exportSingle(fmtType) {
+  const sel = document.getElementById('personSelect');
+  if (sel.value === '') { setStatus('Please select a person first', 'error'); return; }
+  await renderPreview();
+  const canvas = document.getElementById('cardCanvas');
+  const row = DATA[sel.value];
+  const fn = `IDCard_${row.no}_${row.name.replace(/\s+/g,'_')}`;
+  if (fmtType === 'png') canvas.toBlob(b => saveAs(b, fn+'.png'), 'image/png');
+  else if (fmtType === 'jpg') canvas.toBlob(b => saveAs(b, fn+'.jpg'), 'image/jpeg', 0.95);
+  else if (fmtType === 'pdf') {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ orientation:'portrait', unit:'mm', format:[90,130] });
+    pdf.addImage(canvas.toDataURL('image/jpeg',0.95), 'JPEG', 0, 0, 90, 130);
+    pdf.save(fn + '.pdf');
+  }
+  setStatus('Exported: ' + fn, 'success');
+}
+
+async function batchExport() {
+  if (DATA.length === 0) { setStatus('No data', 'error'); return; }
+  const prog = document.getElementById('progressContainer');
+  const bar = document.getElementById('progressBar');
+  prog.style.display = 'block'; bar.style.width = '0%';
+  const zip = new JSZip();
+  const tc = document.createElement('canvas');
+  tc.width = 1063; tc.height = 1535;
+  const title = document.getElementById('titleInput').value;
+
+  for (let i = 0; i < DATA.length; i++) {
+    const row = DATA[i];
+    const id = displayId(row, row.team);
+    await renderCard(tc, { id, name: row.name, unit: row.unit, team: row.team, title });
+    const data = tc.toDataURL('image/png').split(',')[1];
+    zip.file(`${id}_${row.name.replace(/[^a-zA-Z0-9]/g,'_')}.png`, data, { base64: true });
+    bar.style.width = ((i+1)/DATA.length*100) + '%';
+    setStatus(`Generating ${i+1}/${DATA.length}`, 'info');
+    if (i % 5 === 0) await new Promise(r => setTimeout(r, 5));
+  }
+  setStatus('Compressing ZIP...', 'info');
+  const blob = await zip.generateAsync({ type:'blob' });
+  saveAs(blob, 'IDCards_Batch_' + Date.now() + '.zip');
+  setStatus(`Done: ${DATA.length} cards`, 'success');
+  prog.style.display = 'none';
+}
+
+/* ---------- STATUS ---------- */
+function setStatus(msg, type) {
+  const el = document.getElementById('statusMsg');
+  el.className = 'status ' + (type||'info');
+  el.textContent = msg;
+}
+
+/* ---------- VALIDATION VIEW ---------- */
+async function runValidation(idParam) {
+  document.getElementById('generatorView').classList.add('hidden');
+  document.getElementById('validationView').classList.remove('hidden');
+  document.getElementById('validationTimestamp').textContent = 'Checked: ' + new Date().toLocaleString();
+  await makeLogos();
+
+  const match = DATA.find(r => displayId(r, r.team) === idParam || r.no === idParam);
+  const canvas = document.getElementById('validationCanvas');
+  const resultEl = document.getElementById('validationResultText');
+  if (match) {
+    const id = displayId(match, match.team);
+    await renderCard(canvas, { id, name: match.name, unit: match.unit, team: match.team, title:'TIM PELAKSANA EKSEKUSI BLOK 15' }, { stamp:'VALID' });
+    resultEl.textContent = '✅ ID ' + idParam + ' is VALID';
+    resultEl.style.color = '#28a745';
+  } else {
+    await renderCard(canvas, { id: idParam, name: 'UNKNOWN', unit: 'N/A', team:'Transisi Internal', title:'TIM PELAKSANA EKSEKUSI BLOK 15' }, { stamp:'INVALID' });
+    resultEl.textContent = '❌ ID ' + idParam + ' is INVALID';
+    resultEl.style.color = '#dc3545';
+  }
+}
+
+/* ============================================================
+   BOOTSTRAP - runs immediately after DOM
+   ============================================================ */
+document.addEventListener('DOMContentLoaded', async () => {
+  // Update count first thing
+  document.getElementById('entryCount').textContent = DATA.length;
+
+  // Populate dropdowns immediately (no waiting)
+  populateTeamFilter();
+  populatePersonSelect();
+
+  // Wire events
+  document.getElementById('teamFilter').addEventListener('change', () => {
+    populatePersonSelect();
+    renderPreview();
+  });
+  document.getElementById('personSelect').addEventListener('change', renderPreview);
+  document.getElementById('teamSelect').addEventListener('change', renderPreview);
+  document.getElementById('titleInput').addEventListener('input', renderPreview);
+  document.getElementById('photoUpload').addEventListener('change', (e) => {
+    const f = e.target.files[0]; if (!f) return;
+    const r = new FileReader();
+    r.onload = ev => { const img = new Image(); img.onload = () => { photoImg = img; renderPreview(); }; img.src = ev.target.result; };
+    r.readAsDataURL(f);
+  });
+  document.getElementById('manualPhoto').addEventListener('change', (e) => {
+    const f = e.target.files[0]; if (!f) return;
+    const r = new FileReader();
+    r.onload = ev => { const img = new Image(); img.onload = () => { photoImg = img; renderPreview(); }; img.src = ev.target.result; };
+    r.readAsDataURL(f);
+  });
+
+  document.getElementById('btnUnlock').addEventListener('click', () => {
+    if (document.getElementById('manualPassword').value === MANUAL_PASSWORD) {
+      document.getElementById('manualLocked').classList.add('hidden');
+      document.getElementById('manualForm').classList.remove('hidden');
+      setStatus('Manual input unlocked', 'success');
+    } else setStatus('Wrong password', 'error');
+  });
+
+  document.getElementById('btnAddManual').addEventListener('click', () => {
+    const name = document.getElementById('manualName').value.trim();
+    const id = document.getElementById('manualId').value.trim();
+    const team = document.getElementById('manualTeam').value;
+    const unit = document.getElementById('manualUnit').value.trim() || 'PPKGBK';
+    if (!name || !id) { setStatus('Name and ID required', 'error'); return; }
+    DATA.push({ no: id, name, unit, team });
+    populateTeamFilter();
+    populatePersonSelect();
+    document.getElementById('entryCount').textContent = DATA.length;
+    document.getElementById('personSelect').value = DATA.length - 1;
+    document.getElementById('teamSelect').value = team;
+    setStatus('Manual entry added', 'success');
+    renderPreview();
+  });
+
+  document.getElementById('btnPng').addEventListener('click', () => exportSingle('png'));
+  document.getElementById('btnJpg').addEventListener('click', () => exportSingle('jpg'));
+  document.getElementById('btnPdf').addEventListener('click', () => exportSingle('pdf'));
+  document.getElementById('btnBatch').addEventListener('click', batchExport);
+
+  // Tabs
+  document.querySelectorAll('.tab').forEach(t => {
+    t.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      const m = t.dataset.tab;
+      document.getElementById('tabSeed').classList.toggle('hidden', m !== 'seed');
+      document.getElementById('tabManual').classList.toggle('hidden', m !== 'manual');
+    });
+  });
+
+  // Check validation mode
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('mode') === 'verify' || params.has('id') || params.has('validate')) {
+    runValidation(params.get('id') || params.get('validate'));
+    return;
+  }
+
+  // Load logos in background, then render
+  await makeLogos();
+  renderPreview();
+});
+</script>
+</body>
+</html>
