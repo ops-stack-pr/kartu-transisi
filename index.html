@@ -490,18 +490,19 @@ function makeLogos() {
     let done = 0;
     const check = () => { done++; if (done === 2) resolve(); };
 
-    const gbkSvg = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 480 160'><text x='240' y='138' text-anchor='middle' font-family='Arial Black, Arial' font-weight='900' font-size='180' fill='%23d8232a' letter-spacing='-8'>GBK</text></svg>`;
-    const kemSvg = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 240'><ellipse cx='100' cy='100' rx='92' ry='92' fill='none' stroke='%23d4b015' stroke-width='7'/><ellipse cx='100' cy='100' rx='78' ry='78' fill='none' stroke='%23d4b015' stroke-width='4'/><polygon points='100,40 117,93 173,93 128,126 145,179 100,146 55,179 72,126 27,93 83,93' fill='%23f7c91f' stroke='%23c39a00' stroke-width='2'/><text x='100' y='215' text-anchor='middle' font-family='Arial Black, Arial' font-weight='900' font-size='20' fill='%23003a8c'>KEMENTERIAN</text><text x='100' y='234' text-anchor='middle' font-family='Arial Black, Arial' font-weight='900' font-size='16' fill='%23003a8c'>SEKRETARIAT NEGARA</text></svg>`;
+    // Real PNG files (put them in the same folder as index-6.html)
+    const gbkPng = "Company Logo_GBK.png";
+    const kemPng = "Company Logo_Kemensetneg.png";
 
     const g = new Image();
     g.onload = () => { gbkLogoImg = g; check(); };
     g.onerror = check;
-    g.src = gbkSvg;
+    g.src = gbkPng;
 
     const k = new Image();
     k.onload = () => { kemensetnegLogoImg = k; check(); };
     k.onerror = check;
-    k.src = kemSvg;
+    k.src = kemPng;
   });
 }
 
@@ -624,14 +625,17 @@ async function renderCard(canvas, data, options) {
   rr(ctx, tbX, tbY, tbW, tbH, 30);
   ctx.fill();
 
-  if (gbkLogoImg) {
-    const gw = 320, gh = 110;
-    ctx.drawImage(gbkLogoImg, tbX + tbW/2 - gw - 10, tbY + (tbH-gh)/2, gw, gh);
-  }
-  if (kemensetnegLogoImg) {
-    const ks = 140;
-    ctx.drawImage(kemensetnegLogoImg, tbX + tbW/2 + 30, tbY + (tbH-ks)/2, ks*0.85, ks);
-  }
+ // GBK + Kemensetneg logos side by side, centered, not stretched
+ 
+if (gbkLogoImg && kemensetnegLogoImg) {
+  const gap = 20;
+  const totalWidth = gbkLogoImg.width + gap + kemensetnegLogoImg.width;
+  const y = tbY + tbH / 2 - gbkLogoImg.height / 2;
+  const gx = tbX + tbW / 2 - totalWidth / 2;
+  
+  ctx.drawImage(gbkLogoImg, gx, y);
+  ctx.drawImage(kemensetnegLogoImg, gx + gbkLogoImg.width + gap, y);
+}
 
   // Title
   ctx.fillStyle = '#fff';
